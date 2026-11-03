@@ -1,0 +1,23 @@
+--- a/src/runtime/src/native/libs/configure.cmake
++++ b/src/runtime/src/native/libs/configure.cmake
+@@ -1031,7 +1031,7 @@
+     message(FATAL_ERROR "Cannot find inotify functions on a Linux platform.")
+ endif()
+ 
+-option(HeimdalGssApi "use heimdal implementation of GssApi" OFF)
++option(HeimdalGssApi "use heimdal implementation of GssApi" ON)
+ 
+ if (HeimdalGssApi)
+    check_include_files(
+--- a/src/runtime/src/native/corehost/apphost/static/configure.cmake
++++ b/src/runtime/src/native/corehost/apphost/static/configure.cmake
+@@ -4,7 +4,7 @@
+ check_include_files(
+     GSS/GSS.h
+     HAVE_GSSFW_HEADERS)
+ 
+-option(HeimdalGssApi "use heimdal implementation of GssApi" OFF)
++option(HeimdalGssApi "use heimdal implementation of GssApi" ON)
+ if (HeimdalGssApi)
+    check_include_files(
+        gssapi/gssapi.h

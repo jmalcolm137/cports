@@ -1,0 +1,11 @@
+--- a/src/runtime/src/coreclr/clr.featuredefines.props
++++ b/src/runtime/src/coreclr/clr.featuredefines.props
+@@ -11,7 +11,7 @@
+     </PropertyGroup>
+ 
+     <PropertyGroup Condition="'$(TargetsUnix)' == 'true'">
+-        <FeatureXplatEventSource Condition="'$(FeatureXplatEventSource)' == '' AND '$(TargetOS)' == 'linux'">true</FeatureXplatEventSource>
++        <FeatureXplatEventSource Condition="'$(FeatureXplatEventSource)' == '' AND '$(TargetOS)' == 'linux'">false</FeatureXplatEventSource>
+         <FeatureComWrappers>true</FeatureComWrappers>
+     </PropertyGroup>
+ 

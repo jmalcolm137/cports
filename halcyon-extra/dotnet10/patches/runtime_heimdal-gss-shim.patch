@@ -1,0 +1,58 @@
+--- a/src/runtime/src/native/libs/System.Net.Security.Native/pal_gssapi.c
++++ b/src/runtime/src/native/libs/System.Net.Security.Native/pal_gssapi.c
+@@ -58,6 +58,18 @@
+ 
+ #if defined(GSS_SHIM)
+ 
++#if HAVE_HEIMDAL_HEADERS
++/* Heimdal exposes the mechanism OIDs through macros that expand to globals
++ * defined locally in this file (see runtime_heimdal-oid-symbols.patch). They
++ * cannot be looked up by the macro names with dlsym. */
++#define FOR_ALL_GSS_OID_FUNCTIONS
++#else
++#define FOR_ALL_GSS_OID_FUNCTIONS \
++    PER_FUNCTION_BLOCK(gss_mech_krb5) \
++    PER_FUNCTION_BLOCK(GSS_C_NT_USER_NAME) \
++    PER_FUNCTION_BLOCK(GSS_C_NT_HOSTBASED_SERVICE)
++#endif
++
+ #define FOR_ALL_GSS_FUNCTIONS \
+     PER_FUNCTION_BLOCK(gss_accept_sec_context) \
+     PER_FUNCTION_BLOCK(gss_acquire_cred) \
+@@ -69,7 +81,6 @@
+     PER_FUNCTION_BLOCK(gss_indicate_mechs) \
+     PER_FUNCTION_BLOCK(gss_init_sec_context) \
+     PER_FUNCTION_BLOCK(gss_inquire_context) \
+-    PER_FUNCTION_BLOCK(gss_mech_krb5) \
+     PER_FUNCTION_BLOCK(gss_oid_equal) \
+     PER_FUNCTION_BLOCK(gss_release_buffer) \
+     PER_FUNCTION_BLOCK(gss_release_cred) \
+@@ -79,8 +90,7 @@
+     PER_FUNCTION_BLOCK(gss_wrap) \
+     PER_FUNCTION_BLOCK(gss_get_mic) \
+     PER_FUNCTION_BLOCK(gss_verify_mic) \
+-    PER_FUNCTION_BLOCK(GSS_C_NT_USER_NAME) \
+-    PER_FUNCTION_BLOCK(GSS_C_NT_HOSTBASED_SERVICE)
++    FOR_ALL_GSS_OID_FUNCTIONS
+ 
+ // define indirection pointers for all functions, like
+ // static TYPEOF(gss_accept_sec_context)* gss_accept_sec_context_ptr;
+@@ -113,11 +123,17 @@
+ #define gss_get_mic(...)                    gss_get_mic_ptr(__VA_ARGS__)
+ #define gss_verify_mic(...)                 gss_verify_mic_ptr(__VA_ARGS__)
+ 
++#if !HAVE_HEIMDAL_HEADERS
+ #define GSS_C_NT_USER_NAME                  (*GSS_C_NT_USER_NAME_ptr)
+ #define GSS_C_NT_HOSTBASED_SERVICE          (*GSS_C_NT_HOSTBASED_SERVICE_ptr)
+ #define gss_mech_krb5                       (*gss_mech_krb5_ptr)
+-
++#endif
++
++#if HAVE_HEIMDAL_HEADERS
++#define gss_lib_name "libgssapi.so.3"
++#else
+ #define gss_lib_name "libgssapi_krb5.so.2"
++#endif
+ 
+ static int32_t ensure_gss_shim_initialized(void)
+ {

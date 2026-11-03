@@ -1,0 +1,10 @@
+--- a/src/runtime/src/coreclr/pal/src/CMakeLists.txt
++++ b/src/runtime/src/coreclr/pal/src/CMakeLists.txt
+@@ -303,7 +303,6 @@
+   if(NOT CLR_CMAKE_TARGET_ANDROID)
+     target_link_libraries(coreclrpal
+       PUBLIC
+-      gcc_s
+       pthread
+       rt
+     )

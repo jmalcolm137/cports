@@ -1,0 +1,48 @@
+--- a/src/runtime/src/native/libs/System.Net.Security.Native/pal_gssapi.c
++++ b/src/runtime/src/native/libs/System.Net.Security.Native/pal_gssapi.c
+@@ -26,6 +26,45 @@
+ #if defined(GSS_SHIM)
+ #include <dlfcn.h>
+ #include "pal_atomic.h"
++#endif
++
++#if HAVE_HEIMDAL_HEADERS
++/*
++ * Heimdal declares these OIDs in its public headers as globals that are not
++ * all exported from libgssapi. Define them locally so both the shared library
++ * and the static host (singlefilehost) can link.
++ */
++static char gss_krb5_oid_value[] = {
++    0x2a, 0x86, 0x48, 0x86, 0xf7, 0x12, 0x01, 0x02, 0x02
++};
++static char gss_spnego_oid_value[] = {
++    0x2b, 0x06, 0x01, 0x05, 0x05, 0x02
++};
++static char gss_ntlm_oid_value[] = {
++    0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x02, 0x02, 0x0a
++};
++static char gss_nt_user_name_oid_value[] = {
++    0x2a, 0x86, 0x48, 0x86, 0xf7, 0x12, 0x01, 0x02, 0x01, 0x01
++};
++static char gss_nt_hostbased_service_oid_value[] = {
++    0x2a, 0x86, 0x48, 0x86, 0xf7, 0x12, 0x01, 0x02, 0x01, 0x04
++};
++gss_OID_desc __gss_krb5_mechanism_oid_desc = {
++    sizeof(gss_krb5_oid_value), gss_krb5_oid_value
++};
++gss_OID_desc __gss_spnego_mechanism_oid_desc = {
++    sizeof(gss_spnego_oid_value), gss_spnego_oid_value
++};
++gss_OID_desc __gss_ntlm_mechanism_oid_desc = {
++    sizeof(gss_ntlm_oid_value), gss_ntlm_oid_value
++};
++gss_OID_desc __gss_c_nt_user_name_oid_desc = {
++    sizeof(gss_nt_user_name_oid_value), gss_nt_user_name_oid_value
++};
++gss_OID_desc __gss_c_nt_hostbased_service_oid_desc = {
++    sizeof(gss_nt_hostbased_service_oid_value),
++    gss_nt_hostbased_service_oid_value
++};
+ #endif
+ 
+ c_static_assert(PAL_GSS_C_DELEG_FLAG == GSS_C_DELEG_FLAG);

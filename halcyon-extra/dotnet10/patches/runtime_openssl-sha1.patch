@@ -1,0 +1,18 @@
+diff --git a/src/runtime/src/native/libs/System.Security.Cryptography.Native/pal_x509.c b/src/runtime/src/native/libs/System.Security.Cryptography.Native/pal_x509.c
+index 04c6ba06cd..2cd3413dae 100644
+--- a/src/runtime/src/native/libs/System.Security.Cryptography.Native/pal_x509.c
++++ b/src/runtime/src/native/libs/System.Security.Cryptography.Native/pal_x509.c
+@@ -272,11 +272,6 @@ int32_t CryptoNative_X509StoreCtxInit(X509_STORE_CTX* ctx, X509_STORE* store, X5
+ 
+     int32_t val = X509_STORE_CTX_init(ctx, store, x509, extraStore);
+ 
+-    if (val != 0)
+-    {
+-        X509_STORE_CTX_set_flags(ctx, X509_V_FLAG_CHECK_SS_SIGNATURE);
+-    }
+-
+     return val;
+ }
+ 
+-- 
+2.43.2

@@ -1,0 +1,12 @@
+diff --git a/src/runtime/src/mono/mono/utils/mono-threads-coop.c b/src/runtime/src/mono/mono/utils/mono-threads-coop.c
+index 4ed659d6605..34bb5785fba 100644
+--- a/src/runtime/src/mono/mono/utils/mono-threads-coop.c
++++ b/src/runtime/src/mono/mono/utils/mono-threads-coop.c
+@@ -15,6 +15,7 @@
+ #ifdef TARGET_MACH
+ #define _DARWIN_C_SOURCE
+ #endif
++#undef _FORTIFY_SOURCE
+ 
+ #include <mono/utils/mono-compiler.h>
+ #include <mono/utils/mono-threads.h>
