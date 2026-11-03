@@ -1,0 +1,7 @@
+--- a/Userland/Libraries/LibCompress/CMakeLists.txt
++++ b/Userland/Libraries/LibCompress/CMakeLists.txt
+@@ -12,3 +12,4 @@
+ 
+ serenity_lib(LibCompress compress)
+ target_link_libraries(LibCompress PRIVATE LibCore LibCrypto)
++target_compile_definitions(LibCompress PRIVATE "BROTLI_DICTIONARY_FILE=\"${CMAKE_CURRENT_SOURCE_DIR}/BrotliDictionary.cpp.dict.bin\"")

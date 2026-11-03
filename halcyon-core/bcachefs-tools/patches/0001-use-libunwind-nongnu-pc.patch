@@ -1,0 +1,17 @@
+From: Halcyon Linux <cports@halcyon-linux.org>
+Subject: [PATCH] use the libunwind-nongnu pkg-config name
+
+Chimera's standalone libunwind package installs libunwind-nongnu.pc (to
+avoid clashing with LLVM's libunwind). Point the build at that name.
+
+--- a/Makefile
++++ b/Makefile
+@@ -165,7 +165,7 @@
+ CFLAGS+=$(call cc-disable-warning, gnu-variable-sized-type-not-at-end)
+ export RUSTFLAGS:=$(RUSTFLAGS) -C default-linker-libraries
+ 
+-PKGCONFIG_LIBS="blkid uuid liburcu libsodium zlib liblz4 libzstd libudev libkeyutils libunwind"
++PKGCONFIG_LIBS="blkid uuid liburcu libsodium zlib liblz4 libzstd libudev libkeyutils libunwind-nongnu"
+ CFLAGS+=-DBCACHEFS_FUSE
+ 
+ # Only query pkg-config for targets that compile or do a full install.

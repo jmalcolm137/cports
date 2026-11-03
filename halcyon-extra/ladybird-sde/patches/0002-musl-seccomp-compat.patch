@@ -1,0 +1,64 @@
+--- a/Libraries/LibSandbox/Seccomp.cpp
++++ b/Libraries/LibSandbox/Seccomp.cpp
+@@ -820,15 +820,14 @@
+         char space[CMSG_SPACE(2 * sizeof(int))];
+     } request_control {};
+ 
+-    msghdr request_message {
+-        .msg_name = nullptr,
+-        .msg_namelen = 0,
+-        .msg_iov = &request_io,
+-        .msg_iovlen = 1,
+-        .msg_control = &request_control,
+-        .msg_controllen = CMSG_SPACE(passed_fd_count * sizeof(int)),
+-        .msg_flags = 0,
+-    };
++    msghdr request_message {};
++    request_message.msg_name = nullptr;
++    request_message.msg_namelen = 0;
++    request_message.msg_iov = &request_io;
++    request_message.msg_iovlen = 1;
++    request_message.msg_control = &request_control;
++    request_message.msg_controllen = CMSG_SPACE(passed_fd_count * sizeof(int));
++    request_message.msg_flags = 0;
+ 
+     auto* request_header = CMSG_FIRSTHDR(&request_message);
+     request_header->cmsg_level = SOL_SOCKET;
+@@ -860,15 +859,14 @@
+         char space[CMSG_SPACE(sizeof(int))];
+     } response_control {};
+ 
+-    msghdr response_message {
+-        .msg_name = nullptr,
+-        .msg_namelen = 0,
+-        .msg_iov = &response_io,
+-        .msg_iovlen = 1,
+-        .msg_control = &response_control,
+-        .msg_controllen = sizeof(response_control),
+-        .msg_flags = 0,
+-    };
++    msghdr response_message {};
++    response_message.msg_name = nullptr;
++    response_message.msg_namelen = 0;
++    response_message.msg_iov = &response_io;
++    response_message.msg_iovlen = 1;
++    response_message.msg_control = &response_control;
++    response_message.msg_controllen = sizeof(response_control);
++    response_message.msg_flags = 0;
+ 
+     ssize_t received = 0;
+     do {
+@@ -1839,9 +1837,11 @@
+     };
+     append(BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_ioctl, 0, 2 * types.size() + 3));
+     append(SECCOMP_LOAD_ARGUMENT(1));
+-    append(BPF_STMT(BPF_ALU | BPF_AND | BPF_K, _IOC_TYPEMASK << _IOC_TYPESHIFT));
++    static constexpr u32 ioctl_type_mask = 0xff;
++    static constexpr u32 ioctl_type_shift = 8;
++    append(BPF_STMT(BPF_ALU | BPF_AND | BPF_K, ioctl_type_mask << ioctl_type_shift));
+     for (auto type : types) {
+-        append(BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, static_cast<u32>(type) << _IOC_TYPESHIFT, 0, 1));
++        append(BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, static_cast<u32>(type) << ioctl_type_shift, 0, 1));
+         append(SECCOMP_ALLOW);
+     }
+     append(SECCOMP_LOAD_SYSCALL_NR);

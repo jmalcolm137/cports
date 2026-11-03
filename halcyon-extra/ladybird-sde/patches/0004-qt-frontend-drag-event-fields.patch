@@ -1,0 +1,11 @@
+--- a/UI/Qt/WebContentView.cpp
++++ b/UI/Qt/WebContentView.cpp
+@@ -2621,7 +2621,7 @@
+         browser_data = make<DragData>(event);
+     }
+ 
+-    enqueue_input_event(Web::DragEvent { type, position, screen_position.to_type<Web::DevicePixels>(), button, buttons, modifiers, AK::move(files), AK::move(browser_data) });
++    enqueue_input_event(Web::DragEvent { type, position, screen_position.to_type<Web::DevicePixels>(), button, buttons, modifiers, AK::move(files), {}, {}, AK::move(browser_data) });
+ }
+ 
+ void WebContentView::finish_handling_drag_event(Web::DragEvent const& event)

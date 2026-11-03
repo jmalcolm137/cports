@@ -1,0 +1,13 @@
+--- a/Userland/Applications/SystemMonitor/main.cpp
++++ b/Userland/Applications/SystemMonitor/main.cpp
+@@ -254,9 +254,8 @@
+         // It's very frustrating when the system is bogged down under load and you just want
+         // System Monitor to work.
+-        sched_param param {
+-            .sched_priority = THREAD_PRIORITY_MAX,
+-        };
++        sched_param param {};
++        param.sched_priority = THREAD_PRIORITY_MAX;
+         sched_setparam(0, &param);
+     }
+ 

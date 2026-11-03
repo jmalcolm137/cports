@@ -1,0 +1,6 @@
+#!/bin/sh
+unset LD_LIBRARY_PATH
+export LADYBIRD_ENGINE_HOST=/usr/lib/sde/libexec/LadybirdEngine
+export LADYBIRD_SOURCE_DIR="${LADYBIRD_SOURCE_DIR:-/usr/lib/sde}"
+export SERENITY_RES_ROOT="${SERENITY_RES_ROOT:-/usr/lib/sde/share/res}"
+exec /usr/lib/sde/bin/Ladybird.real "$@"

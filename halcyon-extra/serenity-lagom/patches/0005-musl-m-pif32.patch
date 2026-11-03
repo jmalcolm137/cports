@@ -1,0 +1,16 @@
+--- a/Userland/Applications/ClockSettings/TimeZoneSettingsWidget.cpp
++++ b/Userland/Applications/ClockSettings/TimeZoneSettingsWidget.cpp
+@@ -24,9 +24,10 @@
+ #include <spawn.h>
+ #include <unistd.h>
+ 
+-static constexpr auto PI_OVER_180 = M_PIf32 / 180.0f;
+-static constexpr auto PI_OVER_4 = M_PIf32 / 4.0f;
+-static constexpr auto TAU = M_PIf32 * 2.0f;
++static constexpr auto PI = static_cast<float>(M_PI);
++static constexpr auto PI_OVER_180 = PI / 180.0f;
++static constexpr auto PI_OVER_4 = PI / 4.0f;
++static constexpr auto TAU = PI * 2.0f;
+ 
+ // The map as stored on disk is a valid Mercadian projected map. But it has quite a bit of dead space that
+ // we can remove. This makes the map non-Mercadian, so we need to adjust our math based on what we removed.

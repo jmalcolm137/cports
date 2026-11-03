@@ -1,0 +1,11 @@
+--- a/Userland/Libraries/LibCompress/BrotliDictionary.cpp
++++ b/Userland/Libraries/LibCompress/BrotliDictionary.cpp
+@@ -22,7 +22,7 @@
+     ".global brotli_dictionary_data\n"
+     "brotli_dictionary_data:\n");
+ #endif
+-asm(".incbin \"" __FILE__ ".dict.bin\"\n"
++asm(".incbin \"" BROTLI_DICTIONARY_FILE "\"\n"
+ #if (!defined(AK_OS_WINDOWS) && !defined(AK_OS_EMSCRIPTEN))
+     ".previous\n");
+ #else

@@ -1,0 +1,11 @@
+--- a/Meta/CMake/common_compile_options.cmake
++++ b/Meta/CMake/common_compile_options.cmake
+@@ -34,6 +34,7 @@
+ add_compile_options(-Wmisleading-indentation)
+ add_compile_options(-Wmissing-declarations)
+ add_compile_options(-Wundef)
+ add_compile_options(-Wunused)
++add_compile_options(-Wno-unused-const-variable)
+ add_compile_options(-Wwrite-strings)
+ 
+ add_compile_options(-Wno-unknown-warning-option)

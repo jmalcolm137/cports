@@ -1,0 +1,18 @@
+From: Halcyon Linux <cports@halcyon-linux.org>
+Subject: [PATCH] link the standalone libunwind
+
+Chimera's standalone libunwind installs its shared object as
+libunwind-nongnu.so, while LLVM's libunwind is the one that provides
+libunwind.so. The bcachefs stack unwinder needs the former.
+
+--- a/build.rs
++++ b/build.rs
+@@ -14,7 +14,7 @@
+     println!("cargo:rustc-link-lib=udev");
+     println!("cargo:rustc-link-lib=keyutils");
+     println!("cargo:rustc-link-lib=aio");
+-    println!("cargo:rustc-link-lib=unwind");
++    println!("cargo:rustc-link-lib=unwind-nongnu");
+ 
+     // Export static symbols for dladdr() in tools-side prt_addr_symbol
+     println!("cargo:rustc-link-arg-bins=-rdynamic");

@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Ladybird
+Comment=A LibGUI frontend for the Ladybird web browser
+Exec=/usr/lib/sde/bin/Ladybird
+TryExec=/usr/lib/sde/bin/Ladybird
+Icon=/usr/lib/sde/share/res/icons/32x32/app-browser.png
+Categories=Network;WebBrowser;
+MimeType=x-scheme-handler/http;x-scheme-handler/https;text/html;
+Terminal=false
+StartupNotify=true
+StartupWMClass=Ladybird
+OnlyShowIn=SDE;
+X-SerenityOS=true

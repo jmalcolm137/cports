@@ -1,0 +1,12 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -23,6 +23,10 @@
+ cmake_minimum_required(VERSION 3.20)
+ project(SerenityDesktop C CXX)
+ 
++# musl's C headers do not pull in stdbool.h transitively.
++add_compile_options($<$<COMPILE_LANGUAGE:C>:-include> $<$<COMPILE_LANGUAGE:C>:stdbool.h>)
++
+ set(CMAKE_CXX_STANDARD 26)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ set(CMAKE_CXX_EXTENSIONS OFF)

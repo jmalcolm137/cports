@@ -1,0 +1,11 @@
+--- a/Userland/Libraries/LibCore/Command.cpp
++++ b/Userland/Libraries/LibCore/Command.cpp
+@@ -125,7 +125,7 @@
+ // libgui-wayland: build the command helper on the host too; glibc spells the
+ // chdir spawn action with a _np suffix.
+ #if defined(AK_OS_SERENITY)
+ #    define posix_spawn_file_actions_addchdir posix_spawn_file_actions_addchdir
+-#elif defined(__GLIBC__)
++#else
+ #    define posix_spawn_file_actions_addchdir posix_spawn_file_actions_addchdir_np
+ #endif

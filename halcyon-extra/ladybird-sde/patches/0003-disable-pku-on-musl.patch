@@ -1,0 +1,29 @@
+--- a/Libraries/LibJS/Rust/src/jit/executable_memory.rs
++++ b/Libraries/LibJS/Rust/src/jit/executable_memory.rs
+@@ -31,7 +31,7 @@
+     value.div_ceil(alignment) * alignment
+ }
+ 
+-#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
++#[cfg(all(target_os = "linux", target_arch = "x86_64", target_env = "gnu"))]
+ mod protection_key {
+     use std::sync::OnceLock;
+ 
+@@ -129,7 +129,7 @@
+             let mut has_protection_key = false;
+             // NB: With a protection key, the pages can be writable without any thread being able to write them, which
+             //     makes writing code a per-thread register change instead of a page protection change.
+-            #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
++            #[cfg(all(target_os = "linux", target_arch = "x86_64", target_env = "gnu"))]
+             if let Some(key) = protection_key::key() {
+                 // SAFETY: The chunk was just mapped with this size.
+                 has_protection_key = unsafe {
+@@ -178,7 +178,7 @@
+         }
+     };
+ 
+-    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
++    #[cfg(all(target_os = "linux", target_arch = "x86_64", target_env = "gnu"))]
+     if chunk.has_protection_key {
+         let key = protection_key::key().expect("a chunk with a protection key has one");
+         protection_key::set_writable(key, true);

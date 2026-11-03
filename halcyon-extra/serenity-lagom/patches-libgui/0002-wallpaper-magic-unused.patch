@@ -1,0 +1,11 @@
+--- a/src/WindowServerConnection.cpp
++++ b/src/WindowServerConnection.cpp
+@@ -58,7 +58,7 @@
+     u32 height;
+     u32 pitch;
+ };
+-constexpr u32 wallpaper_magic = 0x53445750; // "SDWP"
++[[maybe_unused]] constexpr u32 wallpaper_magic = 0x53445750; // "SDWP"
+ 
+ 
+ 

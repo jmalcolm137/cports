@@ -1,0 +1,29 @@
+--- a/Services/WindowServer/src/main.cpp
++++ b/Services/WindowServer/src/main.cpp
+@@ -58,7 +58,9 @@
+ #include <LibMain/Main.h>
+ 
+ #include <ctime>
+-#include <execinfo.h>
++#if defined(__GLIBC__)
++#    include <execinfo.h>
++#endif
+ #include <fcntl.h>
+ #include <signal.h>
+ #include <stdlib.h>
+@@ -528,10 +530,17 @@
+         crash_write(header, strlen(header));
+         crash_write(name, strlen(name));
++#if defined(__GLIBC__)
+         char const* suffix = " (backtrace follows)\n";
+         crash_write(suffix, strlen(suffix));
+         void* frames[64];
+         int frame_count = backtrace(frames, 64);
+         backtrace_symbols_fd(frames, frame_count, s_crash_log_fd);
++#else
++        char const* suffix = " (no backtrace support)\n";
++        crash_write(suffix, strlen(suffix));
++#endif
+         ::close(s_crash_log_fd);
+         s_crash_log_fd = -1;
+     }

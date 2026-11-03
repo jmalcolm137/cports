@@ -1,0 +1,8 @@
+--- a/Services/WindowServer/CMakeLists.txt
++++ b/Services/WindowServer/CMakeLists.txt
+@@ -197,6 +197,7 @@
+ target_include_directories(WindowServer PRIVATE
++    "${SDE_WLROOTS_SRC}/patched-include"
+     ${WLROOTS_INCLUDE_DIRS}
+     ${WAYLAND_SERVER_INCLUDE_DIRS}
+     ${XKBCOMMON_INCLUDE_DIRS}

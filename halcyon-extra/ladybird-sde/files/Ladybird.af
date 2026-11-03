@@ -1,0 +1,11 @@
+[App]
+Name=&Ladybird
+Description=LibGUI Ladybird browser
+Executable=/usr/lib/sde/bin/Ladybird
+WorkingDirectory=/usr/lib/sde
+Category=&Internet
+IconPath=/usr/lib/sde/share/res/icons/32x32/app-browser.png
+
+[Launcher]
+FileTypes=html,htm
+Protocols=http,https
