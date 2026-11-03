@@ -1,0 +1,12 @@
+--- a/packages/cli/script/build.ts
++++ b/packages/cli/script/build.ts
+@@ -231,6 +231,9 @@
+ }
+ 
+ async function compileExecutable(item: (typeof allTargets)[number]) {
++  const localExecutable = process.env.OPENCODE_BUN_EXECUTABLE
++  if (localExecutable) return localExecutable
++
+   const release = process.env.BUN_COMPILE_RELEASE
+   if (!release) return
+ 
