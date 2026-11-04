@@ -1,6 +1,6 @@
 pkgname = "uutils-coreutils"
 pkgver = "0.12.0"
-pkgrel = 0
+pkgrel = 1
 build_style = "cargo"
 hostmakedepends = ["cargo-auditable"]
 makedepends = ["rust-std"]
