@@ -1,0 +1,15 @@
+--- a/src/xlib/input.c
++++ b/src/xlib/input.c
+@@ -511,8 +511,10 @@
+      * the delay to keep the first repeat prompt while still honouring shorter
+      * compositor values.  MW_REPEAT_DELAY / MW_REPEAT_RATE override both. */
+     if (dl > 200) dl = 200;
+-    if (const char *e = getenv("MW_REPEAT_DELAY")) { int v = atoi(e); if (v >= 0) dl = v; }
+-    if (const char *e = getenv("MW_REPEAT_RATE"))  { int v = atoi(e); if (v >  0) r  = v; }
++    const char *e = getenv("MW_REPEAT_DELAY");
++    if (e) { int v = atoi(e); if (v >= 0) dl = v; }
++    e = getenv("MW_REPEAT_RATE");
++    if (e) { int v = atoi(e); if (v >  0) r  = v; }
+     dp->repeat_rate  = r;
+     dp->repeat_delay = dl;
+     if (getenv("MW_TRACE"))
