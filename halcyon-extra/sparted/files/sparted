@@ -1,0 +1,3 @@
+#!/bin/sh
+export SERENITY_RES_ROOT="${SERENITY_RES_ROOT:-/usr/lib/sde/share/res}"
+exec /usr/lib/sde/bin/sparted.real "$@"
