@@ -1,6 +1,6 @@
 pkgname = "serenity-lagom"
 pkgver = "0.1.0"
-pkgrel = 1
+pkgrel = 2
 pkgdesc = "SerenityOS userland framework, applications and resources for SDE"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/libgui-wayland"

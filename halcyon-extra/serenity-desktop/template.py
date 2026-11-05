@@ -1,6 +1,6 @@
 pkgname = "serenity-desktop"
 pkgver = "0.1.0"
-pkgrel = 1
+pkgrel = 2
 pkgdesc = "SerenityOS desktop environment on Wayland"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/serenity-desktop-environment"
@@ -220,5 +220,13 @@ def install(self):
         "--set-rpath",
         "/usr/lib/sde/lib",
         self.chroot_destdir / "usr/lib/sde/bin/WindowServer",
+    )
+    self.install_file(
+        self.files_path / "WindowServer.ini", "usr/lib/sde/share/etc", mode=0o644
+    )
+    self.install_file(
+        self.files_path / "50-sde-network.rules",
+        "usr/share/polkit-1/rules.d",
+        mode=0o644,
     )
     self.install_license("serenity-desktop-environment/LICENSE")

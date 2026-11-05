@@ -1,0 +1,9 @@
+// Halcyon live session: allow the active local user to manage networking
+// without a PolicyKit password prompt. This covers NetworkManager's connection
+// creation/activation and Wi-Fi enable/disable actions.
+polkit.addRule(function(action, subject) {
+    if (action.id.indexOf("org.freedesktop.NetworkManager.") === 0 &&
+        subject.local && subject.active) {
+        return polkit.Result.YES;
+    }
+});

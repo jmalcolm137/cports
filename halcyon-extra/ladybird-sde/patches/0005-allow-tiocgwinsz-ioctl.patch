@@ -1,0 +1,21 @@
+--- a/Libraries/LibSandbox/Seccomp.cpp
++++ b/Libraries/LibSandbox/Seccomp.cpp
+@@ -1369,6 +1369,18 @@
+     append(SECCOMP_LOAD_SYSCALL_NR);
+     append(BPF_STMT(BPF_ALU | BPF_ADD | BPF_K, 0));
+ 
++#ifdef TIOCGWINSZ
++    // musl's isatty() asks for the terminal window size. AK checks whether
++    // stderr is a terminal to decide on colorized debug output, and that check
++    // runs inside the sandbox.
++    append(BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_ioctl, 0, 5));
++    append(SECCOMP_LOAD_ARGUMENT(1));
++    append(BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, TIOCGWINSZ, 0, 1));
++    append(SECCOMP_ALLOW);
++    append(SECCOMP_LOAD_SYSCALL_NR);
++    append(BPF_STMT(BPF_ALU | BPF_ADD | BPF_K, 0));
++#endif
++
+ #ifdef TCGETS2
+     append(BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_ioctl, 0, 5));
+     append(SECCOMP_LOAD_ARGUMENT(1));
