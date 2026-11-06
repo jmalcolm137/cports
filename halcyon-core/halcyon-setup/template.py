@@ -1,13 +1,13 @@
 pkgname = "halcyon-setup"
 pkgver = "0.1.0"
-pkgrel = 6
+pkgrel = 7
 pkgdesc = "Windows 95-style installation wizard for Halcyon Linux"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/halcyon-setup"
 
 # Update this to the release commit when publishing the package.
 #
-# r6 carries six patches so the live ISO gets the SDE Wayland socket fallback,
+# r7 carries seven patches so the live ISO gets the SDE Wayland socket fallback,
 # the Mounts-step validation fix, the combo-box lifetime/window size fixes, the
 # Desktop step/required-package/PATH fixes, the format argv fix, and the live
 # kernel copy without waiting for a new upstream release. Drop them when
@@ -99,7 +99,10 @@ def install(self):
         "res/HalcyonSetup.desktop", "usr/share/applications", mode=0o644
     )
     self.install_file(
-        "res/HalcyonSetup.desktop", "etc/skel/Desktop", mode=0o755
+        self.files_path / "desktop-launcher",
+        "etc/skel/Desktop",
+        name="Install Halcyon Linux",
+        mode=0o755,
     )
 
     self.install_file(
