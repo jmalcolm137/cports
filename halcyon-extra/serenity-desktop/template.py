@@ -1,6 +1,6 @@
 pkgname = "serenity-desktop"
 pkgver = "0.1.0"
-pkgrel = 2
+pkgrel = 3
 pkgdesc = "SerenityOS desktop environment on Wayland"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/serenity-desktop-environment"
@@ -213,6 +213,19 @@ def install(self):
             "SERENITY": "/usr/lib/sde/framework/serenity",
         },
     )
+
+    # Help hardcodes /usr/share/man. The framework source tree carries the
+    # Serenity manuals, but the v0.1.0 split install skips them. Install the
+    # tree here because the ISO rebuilds this package but not serenity-lagom.
+    # Move this back to the framework package once it owns the manuals.
+    self.do("mkdir", "-p", self.chroot_destdir / "usr/share/man")
+    self.do(
+        "cp",
+        "-a",
+        "/usr/lib/sde/framework/serenity/Base/usr/share/man/.",
+        self.chroot_destdir / "usr/share/man/",
+    )
+
     # WindowServer links the private lagom libraries from /usr/lib/sde/lib;
     # libwlroots itself comes from the system wlroots0.20 package.
     self.do(
