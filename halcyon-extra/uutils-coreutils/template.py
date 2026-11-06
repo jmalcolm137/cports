@@ -1,6 +1,6 @@
 pkgname = "uutils-coreutils"
 pkgver = "0.12.0"
-pkgrel = 2
+pkgrel = 3
 build_style = "cargo"
 hostmakedepends = ["cargo-auditable"]
 makedepends = ["rust-std"]
@@ -93,7 +93,9 @@ def install(self):
     }.items():
         self.install_link(f"usr/bin/gnu/{name}", f"../{target}")
 
-    # prepend the overlay to PATH for regular (non-system) users
-    self.install_file(
-        self.files_path / "00-gnu-path.sh", "etc/profile.d", mode=0o644
-    )
+    # prepend the overlay to PATH for regular (non-system) users; bash only
+    # reads /etc/profile as a login shell, so interactive bash gets its own copy
+    for profile_dir in ["etc/profile.d", "usr/share/bash/bashrc.d"]:
+        self.install_file(
+            self.files_path / "00-gnu-path.sh", profile_dir, mode=0o644
+        )
