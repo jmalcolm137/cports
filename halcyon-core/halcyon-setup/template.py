@@ -1,13 +1,13 @@
 pkgname = "halcyon-setup"
 pkgver = "0.1.0"
-pkgrel = 7
+pkgrel = 8
 pkgdesc = "Windows 95-style installation wizard for Halcyon Linux"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/halcyon-setup"
 
 # Update this to the release commit when publishing the package.
 #
-# r7 carries seven patches so the live ISO gets the SDE Wayland socket fallback,
+# r8 carries eight patches so the live ISO gets the SDE Wayland socket fallback,
 # the Mounts-step validation fix, the combo-box lifetime/window size fixes, the
 # Desktop step/required-package/PATH fixes, the format argv fix, and the live
 # kernel copy without waiting for a new upstream release. Drop them when
