@@ -1,16 +1,18 @@
 pkgname = "uutils-coreutils"
 pkgver = "0.12.0"
-pkgrel = 1
+pkgrel = 2
 build_style = "cargo"
 hostmakedepends = ["cargo-auditable"]
 makedepends = ["rust-std"]
 depends = [
+    "bash",
     "diffutils",
     "findutils",
     "gawk",
     "ggrep",
     "gm4",
     "gsed",
+    "gtar",
 ]
 pkgdesc = "GNU coreutils in Rust, with a GNU userland PATH overlay"
 license = "MIT"
@@ -26,6 +28,7 @@ broken_symlinks = [
     "usr/bin/gnu/grep",
     "usr/bin/gnu/m4",
     "usr/bin/gnu/sed",
+    "usr/bin/gnu/tar",
     "usr/bin/gnu/xargs",
 ]
 # the overlay directory is not a command
@@ -85,6 +88,7 @@ def install(self):
         "grep": "ggrep",
         "m4": "gm4",
         "sed": "gsed",
+        "tar": "gtar",
         "xargs": "gxargs",
     }.items():
         self.install_link(f"usr/bin/gnu/{name}", f"../{target}")
