@@ -1,15 +1,15 @@
 pkgname = "halcyon-setup"
 pkgver = "0.1.0"
-pkgrel = 1
+pkgrel = 2
 pkgdesc = "Windows 95-style installation wizard for Halcyon Linux"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/halcyon-setup"
 
 # Update this to the release commit when publishing the package.
 #
-# r1 carries patches/0001-resolve-sde-wayland-socket.patch so the live ISO
-# gets the SDE Wayland socket fallback without waiting for a new upstream
-# release. Drop that patch when _commit is bumped past the source change.
+# r2 carries two patches so the live ISO gets the SDE Wayland socket fallback
+# and the Mounts-step validation fix without waiting for a new upstream
+# release. Drop them when _commit is bumped past both source changes.
 _commit = "631b8595a97817fe1e6db176b791da2156b416b8"
 
 hostmakedepends = ["gmake"]
