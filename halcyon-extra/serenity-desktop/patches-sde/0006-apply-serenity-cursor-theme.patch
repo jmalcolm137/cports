@@ -1,0 +1,37 @@
+--- a/Services/WindowServer/src/Appearance.cpp
++++ b/Services/WindowServer/src/Appearance.cpp
+@@ -209,13 +209,22 @@
+         return;
+     auto theme = config.value()->read_entry("Cursor"sv, "Theme"sv, "Default"sv);
+     auto size = config.value()->read_num_entry<int>("Cursor"sv, "Size"sv, 24);
++
++    // The Mouse Settings names refer to the SerenityOS PNG themes; the
++    // distribution installs matching Xcursor themes under /usr/share/icons.
++    auto xcursor_theme = theme;
++    if (theme == "Default"sv)
++        xcursor_theme = "SerenityOS"sv;
++    else if (theme == "Dark"sv)
++        xcursor_theme = "SerenityOS-Dark"sv;
++
+     auto size_string = ByteString::number(size);
+-    setenv("XCURSOR_THEME", theme.characters(), true);
++    setenv("XCURSOR_THEME", xcursor_theme.characters(), true);
+     setenv("XCURSOR_SIZE", size_string.characters(), true);
+ 
+-    if (!theme.is_empty() && theme != "Default"sv) {
++    if (!xcursor_theme.is_empty()) {
+         // wlroots 0.20 has no set_theme: recreate the manager with the new theme.
+-        if (auto* manager = wlr_xcursor_manager_create(theme.characters(), size)) {
++        if (auto* manager = wlr_xcursor_manager_create(xcursor_theme.characters(), size)) {
+             for (auto& output : server.outputs)
+                 wlr_xcursor_manager_load(manager, output->output->scale);
+             auto* old_manager = server.cursor_manager;
+@@ -224,7 +233,7 @@
+                 wlr_cursor_set_xcursor(server.cursor, manager, "default");
+             if (old_manager)
+                 wlr_xcursor_manager_destroy(old_manager);
+-            dbgln("WindowServer: applied cursor theme '{}' (size {})", theme, size);
++            dbgln("WindowServer: applied cursor theme '{}' (size {})", xcursor_theme, size);
+         }
+     }
+ 

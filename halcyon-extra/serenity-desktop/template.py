@@ -1,6 +1,6 @@
 pkgname = "serenity-desktop"
 pkgver = "0.1.0"
-pkgrel = 3
+pkgrel = 4
 pkgdesc = "SerenityOS desktop environment on Wayland"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/serenity-desktop-environment"
@@ -16,6 +16,7 @@ hostmakedepends = [
     "patchelf",
     "pkgconf",
     "python",
+    "python-pillow",
     "wayland-progs",
 ]
 makedepends = [
@@ -78,6 +79,10 @@ depends = [
 # Provided by serenity-lagom; the shlib name is unversioned and not in a
 # standard libdir, so the scanner cannot infer the provider.
 ignore_shlibs = ["libwindowserver.so"]
+# 0005/0006 use the SerenityOS cursor artwork (converted to Xcursor themes)
+# and the legacy cursor names that resolve even without a system Xcursor theme.
+# 0007 keeps compositor chrome (cursor highlight, HUDs) out of pointer
+# hit-testing so it cannot swallow clicks.
 options = ["!check", "!cross", "!debug", "!lto"]
 hardening = ["!int"]
 
@@ -212,6 +217,17 @@ def install(self):
             "BUILD": "/usr/lib/sde",
             "SERENITY": "/usr/lib/sde/framework/serenity",
         },
+    )
+
+    # wlroots speaks Xcursor, but SerenityOS ships its cursor themes as PNGs
+    # described by Config.ini. Translate both into /usr/share/icons so the
+    # compositor and its clients use the original SerenityOS artwork.
+    self.cp(self.files_path / "serenity-cursor-theme.py", ".")
+    self.do(
+        "python3",
+        "serenity-cursor-theme.py",
+        "/usr/lib/sde/framework/serenity/Base/res/cursor-themes",
+        self.chroot_destdir,
     )
 
     # Help hardcodes /usr/share/man. The framework source tree carries the

@@ -1,0 +1,30 @@
+--- a/Services/WindowServer/src/Frame.cpp
++++ b/Services/WindowServer/src/Frame.cpp
+@@ -130,19 +130,14 @@
+ 
+ char const* resize_cursor_name(uint32_t edges)
+ {
+-    bool left = edges & WLR_EDGE_LEFT;
+-    bool right = edges & WLR_EDGE_RIGHT;
+-    bool top = edges & WLR_EDGE_TOP;
+-    bool bottom = edges & WLR_EDGE_BOTTOM;
+-    if ((left && top) || (right && bottom))
+-        return "nwse-resize";
+-    if ((right && top) || (left && bottom))
+-        return "nesw-resize";
+-    if (left || right)
+-        return "ew-resize";
+-    if (top || bottom)
+-        return "ns-resize";
+-    return "default";
++    // wlroots resolves the legacy Xcursor names (nw-resize, e-resize, ...) in
++    // every theme, including the built-in fallback used when no Xcursor theme
++    // is installed. That fallback has no CSS-style aliases, so asking for
++    // "nwse-resize" or "ew-resize" would leave the cursor image unchanged over
++    // the resize border.
++    if (!edges)
++        return "default";
++    return wlr_xcursor_get_resize_name(static_cast<enum wlr_edges>(edges));
+ }
+ 
+ void update_button_hover(Server& server, FrameHit const& hit)

@@ -1,0 +1,107 @@
+diff -ruN a/Services/WindowServer/src/Overlays.cpp b/Services/WindowServer/src/Overlays.cpp
+--- a/Services/WindowServer/src/Overlays.cpp	2026-11-06 22:21:17.542993528 -0700
++++ b/Services/WindowServer/src/Overlays.cpp	2026-11-06 22:23:24.661830302 -0700
+@@ -7,6 +7,7 @@
+ #include "Overlays.h"
+ 
+ #include <AK/ScopeGuard.h>
++#include <AK/Vector.h>
+ #include <LibGfx/Painter.h>
+ #include <cmath>
+ #include <drm_fourcc.h>
+@@ -156,6 +157,27 @@
+     wlr_buffer_drop(buffer);
+ }
+ 
++wlr_scene_node* scene_surface_node_at(wlr_scene_node& root, double lx, double ly, double* sx, double* sy)
++{
++    Vector<wlr_scene_node*> skipped;
++    wlr_scene_node* node = nullptr;
++    for (;;) {
++        node = wlr_scene_node_at(&root, lx, ly, sx, sy);
++        if (!node || node->type == WLR_SCENE_NODE_TREE)
++            break;
++        if (node->type == WLR_SCENE_NODE_BUFFER
++            && wlr_scene_surface_try_from_buffer(wlr_scene_buffer_from_node(node)))
++            break;
++        // Chrome (cursor highlight, geometry HUD, shadows) is drawn above the
++        // windows. Hide it for the hit test and try the node underneath.
++        wlr_scene_node_set_enabled(node, false);
++        skipped.append(node);
++    }
++    for (auto* skipped_node : skipped)
++        wlr_scene_node_set_enabled(skipped_node, true);
++    return node;
++}
++
+ // --- snapshots --------------------------------------------------------------
+ 
+ RefPtr<Gfx::Bitmap> snapshot_toplevel(wlr_scene_node& toplevel_node)
+diff -ruN a/Services/WindowServer/src/Overlays.h b/Services/WindowServer/src/Overlays.h
+--- a/Services/WindowServer/src/Overlays.h	2026-11-06 22:21:17.531092606 -0700
++++ b/Services/WindowServer/src/Overlays.h	2026-11-06 22:23:27.164843154 -0700
+@@ -57,6 +57,12 @@
+     wlr_scene_buffer* m_buffer { nullptr };
+ };
+ 
++// Like wlr_scene_node_at, but skips compositor-drawn chrome nodes. They are
++// painted above the windows but are not input targets, so hit-testing must look
++// at the client surface underneath (a cursor highlight otherwise swallows every
++// pointer event).
++wlr_scene_node* scene_surface_node_at(wlr_scene_node& root, double lx, double ly, double* sx, double* sy);
++
+ // Snapshot a toplevel's rendered content, for the switcher's live thumbnails.
+ //
+ // The capture mechanism is undecided - composite the toplevel's scene subtree
+diff -ruN a/Services/WindowServer/src/Pointer.cpp b/Services/WindowServer/src/Pointer.cpp
+--- a/Services/WindowServer/src/Pointer.cpp	2026-11-06 22:21:17.559679803 -0700
++++ b/Services/WindowServer/src/Pointer.cpp	2026-11-06 22:21:29.715239980 -0700
+@@ -11,6 +11,7 @@
+ #include "Frame.h"
+ #include "Idle.h"
+ #include "InputCapture.h"
++#include "Overlays.h"
+ #include "Pointer.h"
+ #include "SessionLock.h"
+ #include "WindowManager.h"
+@@ -34,7 +35,7 @@
+ 
+ Toplevel* toplevel_at(Server& server, double lx, double ly, wlr_surface** surface, double* sx, double* sy)
+ {
+-    wlr_scene_node* node = wlr_scene_node_at(&server.scene->tree.node, lx, ly, sx, sy);
++    wlr_scene_node* node = scene_surface_node_at(server.scene->tree.node, lx, ly, sx, sy);
+     if (!node || node->type != WLR_SCENE_NODE_BUFFER)
+         return nullptr;
+ 
+diff -ruN a/Services/WindowServer/src/SerenityWindow.cpp b/Services/WindowServer/src/SerenityWindow.cpp
+--- a/Services/WindowServer/src/SerenityWindow.cpp	2026-11-06 22:21:17.580690665 -0700
++++ b/Services/WindowServer/src/SerenityWindow.cpp	2026-11-06 22:21:35.153267913 -0700
+@@ -302,7 +302,7 @@
+     if (auto cursor = Core::ConfigFile::open(ByteString::formatted("{}/cursor.ini", Config::state_directory())); !cursor.is_error()) {
+         add("cursor.theme"sv, cursor.value()->read_entry("Cursor"sv, "Theme"sv, "Default"sv));
+         add("cursor.highlight_radius"sv, ByteString::number(cursor.value()->read_num_entry("Highlight"sv, "Radius"sv, 0)));
+-        add("cursor.highlight_color"sv, cursor.value()->read_entry("Highlight"sv, "Color"sv, "#000000"sv));
++        add("cursor.highlight_color"sv, cursor.value()->read_entry("Highlight"sv, "Color"sv, "rgba(0, 0, 0, 0)"sv));
+     }
+     // The output layout (R4.5): "main=<i>;<Mode>,<Device>,<Left>,<Top>,<W>,<H>,<Scale>;...".
+     StringBuilder layout;
+diff -ruN a/Services/WindowServer/src/XWayland.cpp b/Services/WindowServer/src/XWayland.cpp
+--- a/Services/WindowServer/src/XWayland.cpp	2026-11-06 22:21:17.570127895 -0700
++++ b/Services/WindowServer/src/XWayland.cpp	2026-11-06 22:21:33.349258647 -0700
+@@ -9,6 +9,7 @@
+ #include "InputMethod.h"
+ #include "Keyboard.h"
+ #include "LayerShell.h"
++#include "Overlays.h"
+ #include "Pointer.h"
+ #include "Resources.h"
+ #include "Trace.h"
+@@ -45,7 +46,7 @@
+ {
+     if (!server.xwayland.wlr)
+         return false;
+-    auto* node = wlr_scene_node_at(&server.scene->tree.node, lx, ly, sx, sy);
++    auto* node = scene_surface_node_at(server.scene->tree.node, lx, ly, sx, sy);
+     if (!node || node->type != WLR_SCENE_NODE_BUFFER)
+         return false;
+     auto* scene_surface = wlr_scene_surface_try_from_buffer(wlr_scene_buffer_from_node(node));
