@@ -1,0 +1,28 @@
+diff -ruN a/Userland/Applications/MouseSettings/HighlightWidget.cpp b/Userland/Applications/MouseSettings/HighlightWidget.cpp
+--- a/Userland/Applications/MouseSettings/HighlightWidget.cpp	2026-11-06 22:21:45.777158245 -0700
++++ b/Userland/Applications/MouseSettings/HighlightWidget.cpp	2026-11-06 22:21:50.433346399 -0700
+@@ -14,6 +14,12 @@
+     m_highlight_preview = find_descendant_of_type_named<GUI::Frame>("preview_frame")->add<MouseSettings::HighlightPreviewWidget>(palette());
+ 
+     auto current_highlight_color = GUI::ConnectionToWindowServer::the().get_cursor_highlight_color();
++    if (current_highlight_color.alpha() == 0) {
++        // Nothing has configured a highlight yet; start from the SerenityOS
++        // defaults so enabling it later uses red rather than transparent black.
++        current_highlight_color = Gfx::Color(Gfx::Color::NamedColor::Red);
++        current_highlight_color.set_alpha(110);
++    }
+     auto current_highlight_color_no_alpha = current_highlight_color;
+     current_highlight_color_no_alpha.set_alpha(255);
+     m_highlight_color_input = *find_descendant_of_type_named<GUI::ColorInput>("highlight_color_input");
+diff -ruN a/Userland/Applications/MouseSettings/HighlightWidget.gml b/Userland/Applications/MouseSettings/HighlightWidget.gml
+--- a/Userland/Applications/MouseSettings/HighlightWidget.gml	2026-11-06 22:21:45.771658751 -0700
++++ b/Userland/Applications/MouseSettings/HighlightWidget.gml	2026-11-06 22:21:48.187334863 -0700
+@@ -92,7 +92,7 @@
+                 name: "highlight_radius_slider"
+                 orientation: "Horizontal"
+                 max: 60
+-                min: 20
++                min: 0
+                 value: 25
+             }
+ 

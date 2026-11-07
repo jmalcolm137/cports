@@ -1,6 +1,6 @@
 pkgname = "serenity-lagom"
 pkgver = "0.1.0"
-pkgrel = 2
+pkgrel = 3
 pkgdesc = "SerenityOS userland framework, applications and resources for SDE"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/libgui-wayland"
@@ -76,6 +76,8 @@ depends = [
 ]
 # Everything under usr/lib/sde is a self-contained prefix and is not meant to
 # be fed through the distribution's usual soname/dependency mapping.
+# 0008 keeps a disabled cursor highlight disabled when Mouse Settings applies
+# the other tabs, and uses the SerenityOS red/110 defaults when first enabled.
 options = ["!check", "!cross", "!debug", "!lto"]
 hardening = ["!int"]
 
