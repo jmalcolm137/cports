@@ -1,0 +1,10 @@
+# Load the distribution mksh defaults first, then the uutils/GNU userland
+# overlay. mksh reads this file instead of /usr/share/mksh/dot.mkshrc, so the
+# defaults have to be sourced explicitly.
+if [ -r /usr/share/mksh/dot.mkshrc ]; then
+    . /usr/share/mksh/dot.mkshrc
+fi
+
+if [ -r /etc/profile.d/00-gnu-path.sh ]; then
+    . /etc/profile.d/00-gnu-path.sh
+fi

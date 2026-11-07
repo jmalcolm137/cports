@@ -1,6 +1,6 @@
 pkgname = "uutils-coreutils"
 pkgver = "0.12.0"
-pkgrel = 3
+pkgrel = 4
 build_style = "cargo"
 hostmakedepends = ["cargo-auditable"]
 makedepends = ["rust-std"]
@@ -94,8 +94,14 @@ def install(self):
         self.install_link(f"usr/bin/gnu/{name}", f"../{target}")
 
     # prepend the overlay to PATH for regular (non-system) users; bash only
-    # reads /etc/profile as a login shell, so interactive bash gets its own copy
+    # reads /etc/profile as a login shell, so interactive bash gets its own
+    # copy. mksh (the SDE Terminal shell) reads neither, and the terminal drops
+    # ENV, so give every new account an mksh rc from the skeleton.
     for profile_dir in ["etc/profile.d", "usr/share/bash/bashrc.d"]:
         self.install_file(
             self.files_path / "00-gnu-path.sh", profile_dir, mode=0o644
         )
+    self.install_file(self.files_path / "dot.mkshrc", "etc/skel", name=".mkshrc", mode=0o644)
+    # ENV=/etc/mkshrc is set in /etc/environment; POSIX shells that honour ENV
+    # (including chimerautils sh) source the overlay from here.
+    self.install_file(self.files_path / "mkshrc", "etc", name="mkshrc", mode=0o644)

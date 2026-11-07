@@ -1,0 +1,5 @@
+# Source the uutils/GNU userland PATH overlay for interactive POSIX shells.
+# /etc/environment sets ENV=/etc/mkshrc so the shell reads this file.
+if [ -r /etc/profile.d/00-gnu-path.sh ]; then
+    . /etc/profile.d/00-gnu-path.sh
+fi
