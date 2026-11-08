@@ -10,14 +10,16 @@ Zig aarch64 compilation to succeed by bumping the maximum allowed rss.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/build.zig b/build.zig
-index 9e672a4ca7..49f683657e 100644
+index f2e5fb9e4..b2e9e14a1 100644
 --- a/build.zig
 +++ b/build.zig
-@@ -738,7 +738,7 @@ fn addCompilerMod(b: *std.Build, options: AddCompilerModOptions) *std.Build.Modu
- fn addCompilerStep(b: *std.Build, options: AddCompilerModOptions) *std.Build.Step.Compile {
+@@ -909,7 +909,7 @@ fn addCompilerStep(b: *std.Build, options: AddCompilerModOptions) *std.Build.Step.Compile {
      const exe = b.addExecutable(.{
          .name = "zig",
--        .max_rss = 7_800_000_000,
+         // This number should never be raised. If the value is exceeded, then
+         // it is considered a bug in the Zig project that building the
+         // compiler takes more than 8G of memory.
+-        .max_rss = 8_000_000_000,
 +        .max_rss = 8_500_000_000,
          .root_module = addCompilerMod(b, options),
      });
