@@ -1,0 +1,176 @@
+--- a/lib/std/zig/LibCInstallation.zig
++++ b/lib/std/zig/LibCInstallation.zig
+@@ -23,6 +23,7 @@
+ msvc_lib_dir: ?[]const u8 = null,
+ kernel32_lib_dir: ?[]const u8 = null,
+ cc_dir: ?[]const u8 = null,
++compiler_rt: bool = false,
+ darwin_sdk_dir: ?[]const u8 = null,
+ 
+ pub const FindError = error{
+@@ -73,7 +74,10 @@
+                 (std.mem.eql(u8, name, "gcc_dir") and std.mem.eql(u8, field_name, "cc_dir")))
+             {
+                 found_keys[i].found = true;
+-                if (value.len == 0) {
++                if (comptime std.mem.eql(u8, field_name, "compiler_rt")) {
++                    @field(self, field_name) = std.mem.eql(u8, value, "true") or
++                        std.mem.eql(u8, value, "1");
++                } else if (value.len == 0) {
+                     @field(self, field_name) = null;
+                 } else {
+                     found_keys[i].allocated = try allocator.dupe(u8, value);
+@@ -84,7 +88,9 @@
+         }
+     }
+     inline for (field_names, 0..) |field_name, i| {
+-        if (!found_keys[i].found) {
++        if (!found_keys[i].found and
++            !std.mem.eql(u8, field_name, "compiler_rt"))
++        {
+             log.err("missing field: {s}", .{field_name});
+             return error.ParseError;
+         }
+@@ -147,6 +153,10 @@
+         \\# Only needed when targeting Haiku, Linux, or SerenityOS.
+         \\cc_dir={s}
+         \\
++        \\# Whether crtbegin/crtend use compiler-rt names
++        \\# (`clang_rt.crtbegin.o` and `clang_rt.crtend.o`).
++        \\compiler_rt={}
++        \\
+         \\# The directory that contains `crt1.o` or `crt2.o`.
+         \\# On POSIX, can be found with `cc -print-file-name=crt1.o`.
+         \\crt_dir={s}
+@@ -167,6 +177,7 @@
+         self.include_dir orelse "",
+         self.sys_include_dir orelse "",
+         self.cc_dir orelse "",
++        self.compiler_rt,
+         self.crt_dir orelse "",
+         self.msvc_lib_dir orelse "",
+         self.kernel32_lib_dir orelse "",
+@@ -242,6 +253,7 @@
+ /// Must be the same allocator passed to `parse` or `findNative`.
+ pub fn deinit(self: *LibCInstallation, allocator: Allocator) void {
+     inline for (@typeInfo(LibCInstallation).@"struct".field_names) |field_name| {
++        if (comptime std.mem.eql(u8, field_name, "compiler_rt")) continue;
+         if (@field(self, field_name)) |payload| {
+             allocator.free(payload);
+         }
+@@ -469,12 +481,25 @@
+ }
+ 
+ fn findNativeGccDirPosix(self: *LibCInstallation, gpa: Allocator, io: Io, args: FindNativeOptions) FindError!void {
+-    self.cc_dir = try ccPrintFileName(gpa, io, .{
++    self.cc_dir = ccPrintFileName(gpa, io, .{
+         .environ_map = args.environ_map,
+         .search_basename = "crtbeginS.o",
+         .want_dirname = .only_dir,
+         .verbose = args.verbose,
+-    });
++    }) catch |err| switch (err) {
++        error.LibCRuntimeNotFound => blk: {
++            // Some toolchains, such as clang with compiler-rt, do not
++            // provide GCC-style crtbegin/crtend objects.
++            self.compiler_rt = true;
++            break :blk try ccPrintFileName(gpa, io, .{
++                .environ_map = args.environ_map,
++                .search_basename = "clang_rt.crtbegin.o",
++                .want_dirname = .only_dir,
++                .verbose = args.verbose,
++            });
++        },
++        else => |e| return e,
++    };
+ }
+ 
+ fn findNativeKernel32LibDir(
+@@ -717,6 +742,7 @@
+         output_mode: std.lang.OutputMode,
+         link_mode: std.lang.LinkMode,
+         pie: bool,
++        compiler_rt: bool = false,
+     };
+ 
+     /// Determine file system path names of C runtime startup objects for supported
+@@ -765,36 +791,36 @@
+             .linux => switch (mode) {
+                 .dynamic_lib => .{
+                     .crti = "crti.o",
+-                    .crtbegin = "crtbeginS.o",
+-                    .crtend = "crtendS.o",
++                    .crtbegin = if (args.compiler_rt) "clang_rt.crtbegin.o" else "crtbeginS.o",
++                    .crtend = if (args.compiler_rt) "clang_rt.crtend.o" else "crtendS.o",
+                     .crtn = "crtn.o",
+                 },
+                 .dynamic_exe => .{
+                     .crt0 = "crt1.o",
+                     .crti = "crti.o",
+-                    .crtbegin = "crtbegin.o",
+-                    .crtend = "crtend.o",
++                    .crtbegin = if (args.compiler_rt) "clang_rt.crtbegin.o" else "crtbegin.o",
++                    .crtend = if (args.compiler_rt) "clang_rt.crtend.o" else "crtend.o",
+                     .crtn = "crtn.o",
+                 },
+                 .dynamic_pie => .{
+                     .crt0 = "Scrt1.o",
+                     .crti = "crti.o",
+-                    .crtbegin = "crtbeginS.o",
+-                    .crtend = "crtendS.o",
++                    .crtbegin = if (args.compiler_rt) "clang_rt.crtbegin.o" else "crtbeginS.o",
++                    .crtend = if (args.compiler_rt) "clang_rt.crtend.o" else "crtendS.o",
+                     .crtn = "crtn.o",
+                 },
+                 .static_exe => .{
+                     .crt0 = "crt1.o",
+                     .crti = "crti.o",
+-                    .crtbegin = "crtbegin.o",
+-                    .crtend = "crtend.o",
++                    .crtbegin = if (args.compiler_rt) "clang_rt.crtbegin.o" else "crtbegin.o",
++                    .crtend = if (args.compiler_rt) "clang_rt.crtend.o" else "crtend.o",
+                     .crtn = "crtn.o",
+                 },
+                 .static_pie => .{
+                     .crt0 = "rcrt1.o",
+                     .crti = "crti.o",
+-                    .crtbegin = "crtbeginS.o",
+-                    .crtend = "crtendS.o",
++                    .crtbegin = if (args.compiler_rt) "clang_rt.crtbegin.o" else "crtbeginS.o",
++                    .crtend = if (args.compiler_rt) "clang_rt.crtend.o" else "crtendS.o",
+                     .crtn = "crtn.o",
+                 },
+             },
+@@ -1059,6 +1085,7 @@
+ pub fn addToHash(opt_lci: ?*const LibCInstallation, hh: *Cache.HashHelper, abi: std.Target.Abi) void {
+     const lci = opt_lci orelse return hh.add(false);
+     hh.add(true);
++    hh.add(lci.compiler_rt);
+     hh.addOptionalBytes(lci.crt_dir);
+     switch (abi) {
+         .msvc, .itanium => {
+--- a/src/Compilation.zig
++++ b/src/Compilation.zig
+@@ -2432,6 +2432,7 @@
+                         .output_mode = comp.config.output_mode,
+                         .link_mode = comp.config.link_mode,
+                         .pie = comp.config.pie,
++                        .compiler_rt = lci.compiler_rt,
+                     });
+                     const paths = lci.resolveCrtPaths(arena, basenames, target) catch |err| switch (err) {
+                         error.OutOfMemory => |e| return e,
+@@ -7666,12 +7667,14 @@
+     libc_installation: ?*const LibCInstallation,
+     crt_files: *std.StringHashMapUnmanaged(CrtFile),
+ ) error{ OutOfMemory, LibCInstallationMissingCcDir, LibCInstallationMissingCrtDir }!LibCInstallation.CrtPaths {
++    const compiler_rt = if (libc_installation) |lci| lci.compiler_rt else false;
+     const basenames = LibCInstallation.CrtBasenames.get(.{
+         .target = target,
+         .link_libc = config.link_libc,
+         .output_mode = config.output_mode,
+         .link_mode = config.link_mode,
+         .pie = config.pie,
++        .compiler_rt = compiler_rt,
+     });
+     if (libc_installation) |lci| return lci.resolveCrtPaths(arena, basenames, target);
+ 
