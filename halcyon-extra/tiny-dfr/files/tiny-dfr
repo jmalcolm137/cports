@@ -1,0 +1,5 @@
+type = process
+command = /usr/lib/tiny-dfr/tiny-dfr-run
+depends-on = local.target
+smooth-recovery = true
+logfile = /var/log/tiny-dfr.log

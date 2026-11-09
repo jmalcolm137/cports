@@ -1,0 +1,4 @@
+#!/bin/sh
+# Only run when the appletbdrm Touch Bar display driver is available.
+[ -d /sys/bus/platform/drivers/appletbdrm ] || exit 0
+exec /usr/bin/tiny-dfr
