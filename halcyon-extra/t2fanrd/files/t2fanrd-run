@@ -1,0 +1,5 @@
+#!/bin/sh
+# t2fanrd only has something to do on machines with the T2 SMC fan device.
+set -- /sys/devices/pci*/*/*/*/APP0001:00/fan*
+[ -e "$1" ] || exit 0
+exec /usr/bin/t2fanrd

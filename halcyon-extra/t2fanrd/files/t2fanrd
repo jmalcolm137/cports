@@ -1,0 +1,5 @@
+type = process
+command = /usr/lib/t2fanrd/t2fanrd-run
+depends-on = local.target
+smooth-recovery = true
+logfile = /var/log/t2fanrd.log
