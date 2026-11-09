@@ -1,19 +1,14 @@
 pkgname = "halcyon-setup"
 pkgver = "0.1.0"
-pkgrel = 11
+pkgrel = 12
 pkgdesc = "Windows 95-style installation wizard for Halcyon Linux"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/halcyon-setup"
 
-# Update this to the release commit when publishing the package.
-#
-# r11 carries eleven patches so the live ISO gets the SDE Wayland socket
-# fallback, the Mounts-step validation fix, the combo-box lifetime/window size
-# fixes, the Desktop step/required-package/PATH fixes, the format argv fix, the
-# live kernel copy, the Limine stage 3/scroll fixes, the Disk-page refresh, and
-# the ownership/setuid/accounts/SDDM-login fixes, git, and the per-account 3D model copy. Drop them when _commit is
-# bumped past the source changes.
-_commit = "631b8595a97817fe1e6db176b791da2156b416b8"
+# Update this to the release commit when publishing the package. The r11
+# patches were merged into the source tree, so the package now builds directly
+# from the commit below.
+_commit = "daceae5dd7d38d32992559db327f50415f3451e3"
 
 hostmakedepends = ["gmake"]
 makedepends = [
@@ -50,9 +45,14 @@ tool_flags = {
 
 match self.profile.arch:
     case "x86_64":
-        depends += ["grub-i386-pc", "grub-x86_64-efi", "limine"]
+        depends += [
+            "grub-i386-pc",
+            "grub-x86_64-efi",
+            "limine",
+            "firmware-apple",
+        ]
     case "aarch64":
-        depends += ["grub-arm64-efi", "limine"]
+        depends += ["grub-arm64-efi", "limine", "firmware-apple"]
     case "riscv64":
         depends += ["grub-riscv64-efi", "limine"]
     case "ppc" | "ppc64" | "ppc64le":
@@ -61,7 +61,7 @@ match self.profile.arch:
 options = ["!check", "!cross", "etcfiles"]
 
 source = f"{url}/archive/{_commit}.tar.gz"
-sha256 = ["49f0a3c91e445cf87dd1f8183197db47f660198a696f1a6b5d80914739727e60"]
+sha256 = ["4543a1386922103bb0a37b2fa35637d377036cca6b7e2a4969ec79d59c08d73e"]
 
 
 def build(self):

@@ -1,0 +1,5 @@
+type = oneshot
+command = /usr/lib/halcyon/wifi-select --apply
+depends-on = early-fs-local.target
+before = network.target
+logfile = /var/log/halcyon-wifi.log

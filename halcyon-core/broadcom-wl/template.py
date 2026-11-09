@@ -1,6 +1,6 @@
 pkgname = "broadcom-wl"
 pkgver = "6.30.223.271"
-pkgrel = 0
+pkgrel = 1
 # the shipped binary blob and the driver only support x86
 archs = ["x86_64"]
 pkgdesc = "Broadcom 802.11 Linux STA wireless driver"
@@ -13,6 +13,7 @@ source = (
 sha256 = "5f79774d5beec8f7636b59c0fb07a03108eef1e3fd3245638b20858c714144be"
 # no tests; do not let the package stage strip the prebuilt proprietary object
 options = ["!check", "!strip"]
+depends = ["kmod"]
 
 
 # patch series from Arch Linux broadcom-wl-dkms 6.30.223.271-50
@@ -56,9 +57,20 @@ def post_patch(self):
 def install(self):
     self.install_license("lib/LICENSE.txt")
     self.install_file("lib/wlc_hybrid.o_shipped", "usr/lib/broadcom-wl")
+
     self.install_file(
-        self.files_path / "broadcom-wl.conf", "usr/lib/modprobe.d"
+        self.files_path / "halcyon-wifi-select",
+        "usr/lib/halcyon",
+        name="wifi-select",
+        mode=0o755,
     )
+    self.install_initramfs(self.files_path / "halcyon-wifi-hook", name="broadcom-wl")
+    self.install_initramfs(
+        self.files_path / "halcyon-wifi-init",
+        "init-top",
+        name="000-halcyon-wifi",
+    )
+    self.install_service(self.files_path / "halcyon-wifi", enable=True)
 
     srcp = f"usr/src/broadcom-wl-{pkgver}"
     self.install_file("Makefile", srcp)

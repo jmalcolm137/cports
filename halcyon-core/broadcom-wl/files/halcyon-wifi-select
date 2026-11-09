@@ -1,0 +1,115 @@
+#!/bin/sh
+# Select the Broadcom Wi-Fi driver for the machine we are booting on.
+#
+# T2 Macs use the in-tree brcmfmac driver. Older Apple machines and other
+# Broadcom hardware use the proprietary wl driver. The wrong driver must not
+# autoload, so the selection is written as a modprobe.d fragment before udev
+# starts in the initramfs, and applied again after the root filesystem (and
+# its firmware) is available.
+set -u
+
+SYSFS=${HALCYON_WIFI_SYSFS:-/sys}
+MODPROBE=${HALCYON_WIFI_MODPROBE:-}
+CONF_DIR=${HALCYON_WIFI_MODPROBE_CONF_DIR:-/run/modprobe.d}
+CONF="$CONF_DIR/50-halcyon-wifi.conf"
+MODE=${1:---apply}
+
+if [ -z "$MODPROBE" ]; then
+    MODPROBE=$(command -v modprobe 2>/dev/null || echo /usr/bin/modprobe)
+fi
+
+is_t2_mac() {
+    # T2 Macs expose the Apple T2 Bridge Controller at 106b:1801.
+    for dev in "$SYSFS"/bus/pci/devices/*; do
+        [ -r "$dev/vendor" ] || continue
+        [ -r "$dev/device" ] || continue
+        read -r vendor < "$dev/vendor" || continue
+        read -r device < "$dev/device" || continue
+        if [ "$vendor" = "0x106b" ] && [ "$device" = "0x1801" ]; then
+            return 0
+        fi
+    done
+
+    # Fallback for unusual firmware/PCI visibility: use the DMI list from the
+    # linux-halcyon T2 patch set.
+    [ -r "$SYSFS/class/dmi/id/sys_vendor" ] || return 1
+    [ -r "$SYSFS/class/dmi/id/product_name" ] || return 1
+    read -r vendor < "$SYSFS/class/dmi/id/sys_vendor" || return 1
+    read -r product < "$SYSFS/class/dmi/id/product_name" || return 1
+    case "$vendor" in
+        *Apple*) ;;
+        *) return 1 ;;
+    esac
+    case "$product" in
+        MacBookPro15,1|MacBookPro15,2|MacBookPro15,3|MacBookPro15,4|\
+        MacBookPro16,1|MacBookPro16,2|MacBookPro16,3|MacBookPro16,4|\
+        MacBookAir8,1|MacBookAir8,2|MacBookAir9,1|Macmini8,1|MacPro7,1|\
+        iMac20,1|iMac20,2|iMacPro1,1)
+            return 0
+            ;;
+    esac
+    return 1
+}
+
+write_config() {
+    mkdir -p "$CONF_DIR" || return 1
+
+    if is_t2_mac; then
+        {
+            echo "# Apple T2: brcmfmac is the correct driver."
+            echo "blacklist wl"
+            echo "blacklist b43"
+            echo "blacklist b43legacy"
+            echo "blacklist bcm43xx"
+            echo "blacklist bcma"
+            echo "blacklist brcmsmac"
+            echo "blacklist ssb"
+            # Defer brcmfmac in the initramfs so firmware from the real root
+            # can be loaded after switch_root. Explicit modprobe ignores this.
+            if [ "$MODE" = "--initramfs" ]; then
+                echo "blacklist brcmfmac"
+            fi
+        } > "$CONF"
+    else
+        {
+            echo "# Non-T2 Broadcom hardware: use the proprietary wl driver."
+            echo "blacklist b43"
+            echo "blacklist b43legacy"
+            echo "blacklist bcm43xx"
+            echo "blacklist bcma"
+            echo "blacklist brcm80211"
+            echo "blacklist brcmfmac"
+            echo "blacklist brcmsmac"
+            echo "blacklist ssb"
+        } > "$CONF"
+    fi
+}
+
+case "$MODE" in
+    --status)
+        if is_t2_mac; then echo t2; else echo non-t2; fi
+        exit 0
+        ;;
+    --initramfs)
+        write_config || exit 0
+        exit 0
+        ;;
+    --apply|"")
+        write_config || exit 0
+        if is_t2_mac; then
+            "$MODPROBE" -r wl 2>/dev/null || true
+            "$MODPROBE" brcmfmac 2>/dev/null || true
+            "$MODPROBE" brcmfmac_wcc 2>/dev/null || true
+        else
+            "$MODPROBE" -r brcmfmac_wcc 2>/dev/null || true
+            "$MODPROBE" -r brcmfmac 2>/dev/null || true
+            "$MODPROBE" -r brcmutil 2>/dev/null || true
+            "$MODPROBE" wl 2>/dev/null || true
+        fi
+        exit 0
+        ;;
+    *)
+        echo "usage: wifi-select [--initramfs|--apply|--status]" >&2
+        exit 1
+        ;;
+esac

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Run before udev in the initramfs so the wrong Broadcom driver cannot bind.
+[ -x /usr/lib/halcyon/wifi-select ] || exit 0
+exec /usr/lib/halcyon/wifi-select --initramfs
