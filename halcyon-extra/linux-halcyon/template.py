@@ -1,0 +1,73 @@
+# Fork of main/linux-stable with the CachyOS kernel patch set and Apple T2
+# hardware support. Keep the base version and patches in sync with linux-stable.
+pkgname = "linux-halcyon"
+pkgver = "7.3.1"
+pkgrel = 0
+archs = ["x86_64"]
+build_style = "linux_kernel"
+configure_args = ["FLAVOR=generic", f"RELEASE={pkgrel}"]
+make_dir = "build"
+make_install_env = {"ZSTD_CLEVEL": "9"}
+hostmakedepends = ["base-kernel-devel"]
+depends = ["base-kernel", "util-linux-mkfs", "util-linux-mount"]
+provides = ["linux"]
+replaces = ["linux-stable"]
+replaces_priority = 100
+pkgdesc = "Linux kernel with CachyOS and Apple T2 patches"
+license = "GPL-2.0-only"
+url = "https://kernel.org"
+source = f"https://cdn.kernel.org/pub/linux/kernel/v{pkgver[0]}.x/linux-{pkgver}.tar.xz"
+sha256 = "fa595aad93734f829c963c2a90ef7c3673224fd7fdae7b49406e397cde2de231"
+# no meaningful checking to be done
+options = [
+    "!ci",
+    "!check",
+    "!debug",
+    "!strip",
+    "!scanrundeps",
+    "!scanshlibs",
+    "!lto",
+    "textrels",
+    "execstack",
+    "foreignelf",  # vdso32
+]
+
+if self.current_target == "custom:generate-configs":
+    hostmakedepends += ["base-cross", "ncurses-devel"]
+
+
+@subpackage("linux-halcyon-devel")
+def _(self):
+    self.depends += ["clang"]
+    self.options = ["foreignelf", "execstack", "!scanshlibs"]
+    return ["usr/src", "usr/lib/modules/*/build"]
+
+
+@subpackage("linux-halcyon-dbg", self.build_dbg)
+def _(self):
+    self.options = [
+        "!scanrundeps",
+        "!strip",
+        "!scanshlibs",
+        "foreignelf",
+        "execstack",
+        "textrels",
+    ]
+    return ["usr/lib/debug", "usr/lib/modules/*/apk-dist/boot/System.map-*"]
+
+
+def post_install(self):
+    # CachyOS memory/swap tunings (zswap and zram are used before page cache)
+    self.install_file(
+        self.files_path / "70-cachyos-settings.conf",
+        "usr/lib/sysctl.d",
+        mode=0o644,
+    )
+    # CachyOS zram-generator equivalent: zram0, zstd, size = RAM, prio 100
+    self.install_file(
+        self.files_path / "zram-setup",
+        "usr/lib/linux-halcyon",
+        name="zram-setup",
+        mode=0o755,
+    )
+    self.install_service(self.files_path / "zram", enable=True)

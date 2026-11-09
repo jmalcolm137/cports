@@ -1,0 +1,24 @@
+#!/bin/sh
+# Replicate the CachyOS zram-generator configuration:
+# zram0, zstd, size = RAM, swap priority 100.
+set -eu
+
+dev=/sys/block/zram0
+
+# an existing, already configured device is left alone
+if [ -r "$dev/disksize" ] && [ "$(cat "$dev/disksize")" != "0" ]; then
+    exit 0
+fi
+
+if [ ! -e "$dev" ]; then
+    modprobe zram num_devices=1 2>/dev/null || modprobe zram 2>/dev/null || exit 0
+fi
+[ -e "$dev" ] || exit 0
+
+mem=$(awk '/^MemTotal:/ { print $2 * 1024 }' /proc/meminfo)
+[ -n "$mem" ] || exit 0
+
+echo zstd > "$dev/comp_algorithm" 2>/dev/null || true
+echo "$mem" > "$dev/disksize"
+mkswap "$dev" > /dev/null
+swapon -p 100 "$dev"
