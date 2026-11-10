@@ -36,6 +36,3 @@ def install(self):
     from cbuild.util import linux
 
     linux.ckms_install(self, "bcachefs", _bcachefsver, self._linux_version)
-
-    srcp = linux.get_modsrc(self, "bcachefs", _bcachefsver)
-    self.install_license(srcp / "COPYING")
