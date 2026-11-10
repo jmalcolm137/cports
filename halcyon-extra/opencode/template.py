@@ -90,11 +90,12 @@ def prepare(self):
         self.cp(self.files_path / "node" / src, dest)
 
     # the Node build's internal binary name is opencode2-node; install as opencode
-    self.do(
-        "sed",
-        "-i",
-        's/OPENCODE_CLI_NAME: JSON.stringify("opencode2-node")/OPENCODE_CLI_NAME: JSON.stringify("opencode")/',
-        "packages/cli/vite.node.config.ts",
+    cfg = self.cwd / "packages/cli/vite.node.config.ts"
+    cfg.write_text(
+        cfg.read_text().replace(
+            'OPENCODE_CLI_NAME: JSON.stringify("opencode2-node")',
+            'OPENCODE_CLI_NAME: JSON.stringify("opencode")',
+        )
     )
 
     # build a musl node-pty addon in place of the glibc prebuild npm fetched
@@ -170,7 +171,9 @@ def build(self):
     self.do("cp", out, "opencode")
     self.do("chmod", "755", "opencode")
     for shell in ["bash", "fish", "zsh"]:
-        self.do("sh", "-c", f"./opencode --completions {shell} > opencode.{shell}")
+        self.do(
+            "sh", "-c", f"./opencode --completions {shell} > opencode.{shell}"
+        )
 
 
 def install(self):
@@ -178,7 +181,9 @@ def install(self):
     self.install_bin(out, name="opencode")
 
     self.install_file(
-        "opencode.bash", "usr/share/bash-completion/completions", name="opencode"
+        "opencode.bash",
+        "usr/share/bash-completion/completions",
+        name="opencode",
     )
     self.install_file(
         "opencode.fish",
