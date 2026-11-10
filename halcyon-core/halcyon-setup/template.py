@@ -61,7 +61,7 @@ match self.profile.arch:
 options = ["!check", "!cross", "etcfiles"]
 
 source = f"{url}/archive/{_commit}.tar.gz"
-sha256 = ["4543a1386922103bb0a37b2fa35637d377036cca6b7e2a4969ec79d59c08d73e"]
+sha256 = ["9293774fc41d0b4e15d0e63a0a6e8c105f79e823251a79d6124f0b67d89a1e1f"]
 
 
 def build(self):
