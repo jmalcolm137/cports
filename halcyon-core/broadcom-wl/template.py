@@ -12,8 +12,8 @@ source = (
 )
 sha256 = "5f79774d5beec8f7636b59c0fb07a03108eef1e3fd3245638b20858c714144be"
 # no tests; do not let the package stage strip the prebuilt proprietary object
-options = ["!check", "!strip"]
 depends = ["kmod"]
+options = ["!check", "!strip"]
 
 
 # patch series from Arch Linux broadcom-wl-dkms 6.30.223.271-50
