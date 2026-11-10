@@ -1,118 +1,181 @@
 pkgname = "opencode"
 pkgver = "2.2.5"
-pkgrel = 0
+pkgrel = 1
 archs = ["x86_64"]
 
-_bunver = "1.4.4"
+_nodepty_ver = "1.2.0-beta.12"
 
-hostmakedepends = ["bun", "patchelf"]
-makedepends = ["libcxxabi-devel", "libgcc-chimera"]
+hostmakedepends = [
+    "bash",
+    "clang",
+    "git",
+    "gmake",
+    "libcxx-devel",
+    "libgcc-chimera",
+    "nodejs",
+    "nodejs-devel",
+    "python",
+]
 depends = [
     "bash",
     "ca-certificates",
     "curl",
     "libarchive-progs",
+    "libcxx",
     "libcxxabi",
     "libgcc-chimera",
+    "libunwind",
     "ripgrep",
 ]
-
 pkgdesc = "Open source AI coding agent"
 license = "MIT"
 url = "https://github.com/anomalyco/opencode"
-
-# The prebuilt binary is produced by Bun and its ABI shim is intentionally
-# kept outside the scan paths; dependencies are declared explicitly.
-options = [
-    "!check",
-    "!cross",
-    "!debug",
-    "!lto",
-    "!scanrundeps",
-    "!scanshlibs",
-    "!strip",
-]
-
 source = [
     f"{url}/archive/refs/tags/v{pkgver}.tar.gz",
-    f"https://github.com/oven-sh/bun/releases/download/bun-v{_bunver}/bun-linux-x64-musl-baseline.zip",
+    f"https://registry.npmjs.org/node-pty/-/node-pty-{_nodepty_ver}.tgz",
 ]
-source_paths = [".", "bun-baseline"]
+source_paths = [".", "node-pty"]
 sha256 = [
     "04621edf6c47c2c7a36982ef39914d482c16977708fbd7b779f49f928bdc4fba",
-    "6e9c37098b293920aed28bfb51ab240e26d23bfdd9bbfecb3ad428ac166549bc",
+    "45a012e37699bb70c9050cbf2e06e71b0b842de4cda58e938e3de973f6d5a36a",
 ]
+# the single-executable binary cannot be stripped, and tests need a browser
+options = ["!check", "!cross", "!debug", "!lto", "!strip"]
 
-_target = "linux-x64-baseline-musl"
-_outdir = f"packages/cli/dist/cli-{_target}/bin/opencode"
+# Bun-only build driver files, ported to Node APIs
+_node_files = {
+    "script-index.ts": "packages/script/src/index.ts",
+    "app-assets.ts": "packages/cli/script/app-assets.ts",
+    "verify-artifact.ts": "packages/cli/script/verify-artifact.ts",
+    "models-snapshot.ts": "packages/core/script/models-snapshot.ts",
+    "runtime-modules.ts": "packages/plugin/src/runtime-modules.ts",
+    "target.ts": "packages/cli/src/node/target.ts",
+    "node-assets.ts": "packages/cli/script/node-assets.ts",
+    "build-node.ts": "packages/cli/script/build-node.ts",
+}
 
 
 def prepare(self):
-    # The build needs the native musl variants of several optional
-    # dependencies, including the web UI's lightningcss module.
+    self.cp(self.files_path / "flatten-bun.mjs", "flatten-bun.mjs")
+    self.cp(self.files_path / "apply-patches.mjs", "apply-patches.mjs")
+
+    # OpenCode uses Bun's catalog and workspace protocols; flatten them for npm
     self.do(
-        "bun",
+        "node",
+        "flatten-bun.mjs",
+        ".",
+        env={"OPENCODE_TARGET_LIBC": "musl"},
+    )
+
+    self.do(
+        "npm",
         "install",
-        "--os=*",
-        "--cpu=*",
-        "--libc=*",
-        "--frozen-lockfile",
         "--ignore-scripts",
-        f"--cache-dir={self.chroot_cwd / '.bun-cache'}",
-        env={"HUSKY": "0"},
+        "--no-audit",
+        "--no-fund",
+        "--legacy-peer-deps",
+        "--allow-git=all",
+        "--allow-file=all",
+        "--force",
+        env={
+            "HOME": "/tmp/npm-home",
+            "npm_config_cache": "/cbuild_cache/npm",
+        },
         allow_network=True,
+    )
+
+    self.do("node", "apply-patches.mjs", ".")
+
+    for src, dest in _node_files.items():
+        self.cp(self.files_path / "node" / src, dest)
+
+    # the Node build's internal binary name is opencode2-node; install as opencode
+    self.do(
+        "sed",
+        "-i",
+        's/OPENCODE_CLI_NAME: JSON.stringify("opencode2-node")/OPENCODE_CLI_NAME: JSON.stringify("opencode")/',
+        "packages/cli/vite.node.config.ts",
+    )
+
+    # build a musl node-pty addon in place of the glibc prebuild npm fetched
+    self.do(
+        "npm",
+        "install",
+        "--ignore-scripts",
+        "--no-audit",
+        "--no-fund",
+        "--omit=dev",
+        "node-addon-api@7",
+        wrksrc="node-pty",
+        env={"HOME": "/tmp/npm-home", "npm_config_cache": "/cbuild_cache/npm"},
+        allow_network=True,
+    )
+    self.do(
+        "node",
+        "/usr/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js",
+        "rebuild",
+        wrksrc="node-pty",
+        env={
+            "CC": "clang",
+            "CXX": "clang++",
+            "CXXFLAGS": "-stdlib=libc++ -O2",
+            "LDFLAGS": "-stdlib=libc++",
+            "npm_config_nodedir": "/usr",
+        },
+    )
+    self.cp(
+        "node-pty/build/Release/pty.node",
+        "node_modules/@lydell/node-pty-linux-x64/prebuilds/linux-x64/pty.node",
+    )
+
+    # the watcher's musl prebuild is linked against libstdc++; rebuild it
+    self.do(
+        "node",
+        "/usr/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js",
+        "rebuild",
+        wrksrc="node_modules/@parcel/watcher",
+        env={
+            "CC": "clang",
+            "CXX": "clang++",
+            "CXXFLAGS": "-stdlib=libc++ -O2",
+            "LDFLAGS": "-stdlib=libc++",
+            "npm_config_nodedir": "/usr",
+        },
+    )
+    self.cp(
+        "node_modules/@parcel/watcher/build/Release/watcher.node",
+        "node_modules/@parcel/watcher-linux-x64-musl/watcher.node",
     )
 
 
 def build(self):
-    # The compiled CLI and some native modules link against the libstdc++
-    # ABI. Provide the small set of symbols the Bun runtime imports instead
-    # of depending on GCC's libstdc++ package. Modules that need the wider
-    # C++ ABI, such as @parcel/watcher, fall back to the fs.watch backend.
-    self.cp(self.files_path / "libstdcxx_compat.c", ".")
     self.do(
-        "clang",
-        "-shared",
-        "-fPIC",
-        "-O2",
-        "-Wl,-soname,libstdc++.so.6",
-        "-o",
-        "libstdc++.so.6",
-        "libstdcxx_compat.c",
-        "-Wl,--no-as-needed",
-        "-lc++abi",
-    )
-
-    bun = self.chroot_cwd / "bun-baseline" / "bun"
-    self.do("chmod", "755", str(bun))
-
-    self.do(
-        "bun",
-        "run",
-        "./script/build.ts",
+        "node",
+        str(self.chroot_cwd / "node_modules/.bin/tsx"),
+        "script/build-node.ts",
         "--skip-install",
         wrksrc="packages/cli",
         env={
+            "NODE_BIN": "/usr/bin/node",
+            "OPENCODE_TARGET": "linux-x64",
             "OPENCODE_VERSION": pkgver,
-            "OPENCODE_TARGET": _target,
-            "OPENCODE_BUN_EXECUTABLE": str(bun),
+            "OPENCODE_CHANNEL": "latest",
+            "OPENCODE_LIBC": "musl",
         },
     )
 
+    # generate completions as the invoking user; the SEA asset cache rejects
+    # paths owned by another uid, which fakeroot in the install phase triggers
+    out = "packages/cli/dist/node/cli-node-linux-x64/bin/opencode"
+    self.do("cp", out, "opencode")
+    self.do("chmod", "755", "opencode")
     for shell in ["bash", "fish", "zsh"]:
-        self.do(
-            "sh",
-            "-c",
-            f"LD_LIBRARY_PATH=. ./{_outdir} --completions {shell} > opencode.{shell}",
-        )
-
-    # The shim is installed in a private prefix next to the CLI.
-    self.do("patchelf", "--set-rpath", "$ORIGIN/../lib/opencode", _outdir)
+        self.do("sh", "-c", f"./opencode --completions {shell} > opencode.{shell}")
 
 
 def install(self):
-    self.install_bin(_outdir)
-    self.install_file("libstdc++.so.6", "usr/lib/opencode", mode=0o755)
+    out = "packages/cli/dist/node/cli-node-linux-x64/bin/opencode"
+    self.install_bin(out, name="opencode")
 
     self.install_file(
         "opencode.bash", "usr/share/bash-completion/completions", name="opencode"
