@@ -1,6 +1,6 @@
 pkgname = "halcyon-setup"
 pkgver = "0.1.0"
-pkgrel = 12
+pkgrel = 13
 pkgdesc = "Windows 95-style installation wizard for Halcyon Linux"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/halcyon-setup"
@@ -8,7 +8,7 @@ url = "https://github.com/jmalcolm137/halcyon-setup"
 # Update this to the release commit when publishing the package. The r11
 # patches were merged into the source tree, so the package now builds directly
 # from the commit below.
-_commit = "daceae5dd7d38d32992559db327f50415f3451e3"
+_commit = "6e7ff899a13a92cc99b7fde2bc171a70d6a173c9"
 
 hostmakedepends = ["gmake"]
 makedepends = [
