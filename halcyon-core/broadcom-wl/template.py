@@ -3,6 +3,8 @@ pkgver = "6.30.223.271"
 pkgrel = 1
 # the shipped binary blob and the driver only support x86
 archs = ["x86_64"]
+makedepends = ["dinit-chimera"]
+depends = ["kmod"]
 pkgdesc = "Broadcom 802.11 Linux STA wireless driver"
 license = "custom:broadcom-wl"
 url = "https://www.broadcom.com/support/download-search?pf=Wireless+LAN+Infrastructure"
@@ -12,7 +14,6 @@ source = (
 )
 sha256 = "5f79774d5beec8f7636b59c0fb07a03108eef1e3fd3245638b20858c714144be"
 # no tests; do not let the package stage strip the prebuilt proprietary object
-depends = ["kmod"]
 options = ["!check", "!strip"]
 
 
