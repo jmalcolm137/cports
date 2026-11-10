@@ -1,12 +1,14 @@
 pkgname = "opencode"
 pkgver = "2.2.5"
-pkgrel = 1
+pkgrel = 2
 archs = ["x86_64"]
 
 _nodepty_ver = "1.2.0-beta.12"
+_ffirs_commit = "d93e1748d68f5f688e9d57cb8efa8e4007ac29f4"
 
 hostmakedepends = [
     "bash",
+    "cargo",
     "clang",
     "git",
     "gmake",
@@ -15,7 +17,10 @@ hostmakedepends = [
     "nodejs",
     "nodejs-devel",
     "python",
+    "rust",
+    "rust-std",
 ]
+makedepends = ["linux-headers"]
 depends = [
     "bash",
     "ca-certificates",
@@ -23,7 +28,6 @@ depends = [
     "libarchive-progs",
     "libcxx",
     "libcxxabi",
-    "libgcc-chimera",
     "libunwind",
     "ripgrep",
 ]
@@ -33,11 +37,13 @@ url = "https://github.com/anomalyco/opencode"
 source = [
     f"{url}/archive/refs/tags/v{pkgver}.tar.gz",
     f"https://registry.npmjs.org/node-pty/-/node-pty-{_nodepty_ver}.tgz",
+    f"https://github.com/zhangyuang/node-ffi-rs/archive/{_ffirs_commit}.tar.gz",
 ]
-source_paths = [".", "node-pty"]
+source_paths = [".", "node-pty", "ffi-rs"]
 sha256 = [
     "04621edf6c47c2c7a36982ef39914d482c16977708fbd7b779f49f928bdc4fba",
     "45a012e37699bb70c9050cbf2e06e71b0b842de4cda58e938e3de973f6d5a36a",
+    "5015ad7c332562ca98ae1a99d816a3428f44e9a26982ed038c6efd5405936e2e",
 ]
 # the single-executable binary cannot be stripped, and tests need a browser
 options = ["!check", "!cross", "!debug", "!lto", "!strip"]
@@ -146,6 +152,25 @@ def prepare(self):
     self.cp(
         "node_modules/@parcel/watcher/build/Release/watcher.node",
         "node_modules/@parcel/watcher-linux-x64-musl/watcher.node",
+    )
+
+    # ffi-rs ships a prebuilt linked against libgcc_s; build it with libunwind
+    self.do(
+        "cargo",
+        "build",
+        "--release",
+        "--locked",
+        wrksrc="ffi-rs",
+        env={
+            "CC": "clang",
+            "CXX": "clang++",
+            "CARGO_HOME": "/cbuild_cache/cargo",
+        },
+        allow_network=True,
+    )
+    self.cp(
+        "ffi-rs/target/release/libffi_rs.so",
+        "node_modules/@yuuang/ffi-rs-linux-x64-musl/ffi-rs.linux-x64-musl.node",
     )
 
 
