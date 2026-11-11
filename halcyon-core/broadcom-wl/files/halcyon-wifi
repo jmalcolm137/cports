@@ -1,4 +1,4 @@
-type = oneshot
+type = scripted
 command = /usr/lib/halcyon/wifi-select --apply
 depends-on = early-fs-local.target
 before = network.target
