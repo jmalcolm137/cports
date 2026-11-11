@@ -1,4 +1,4 @@
-type = oneshot
+type = scripted
 command = /usr/lib/linux-halcyon/zram-setup
 depends-on = early-fs-local.target
 logfile = /var/log/zram.log

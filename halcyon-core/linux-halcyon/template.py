@@ -2,7 +2,7 @@
 # hardware support. Keep the base version and patches in sync with linux-stable.
 pkgname = "linux-halcyon"
 pkgver = "7.3.1"
-pkgrel = 0
+pkgrel = 1
 archs = ["x86_64"]
 build_style = "linux_kernel"
 configure_args = ["FLAVOR=generic", f"RELEASE={pkgrel}"]
