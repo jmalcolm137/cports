@@ -1,0 +1,370 @@
+diff -ruN a/cosmic-applets/justfile b/cosmic-applets/justfile
+--- a/cosmic-applets/justfile	2026-11-11 13:27:44.051457911 -0700
++++ b/cosmic-applets/justfile	2026-11-11 13:28:56.320370783 -0700
+@@ -56,8 +56,6 @@
+ _install_status_notifier_watcher:
+     sed "s|@bindir@|{{ prefixdir }}|" cosmic-applet-status-area/data/dbus-1/com.system76.CosmicStatusNotifierWatcher.service.in > cosmic-applet-status-area/data/dbus-1/com.system76.CosmicStatusNotifierWatcher.service
+     install -Dm0644 cosmic-applet-status-area/data/dbus-1/com.system76.CosmicStatusNotifierWatcher.service {{ sharedir }}/dbus-1/services/com.system76.CosmicStatusNotifierWatcher.service
+-    sed "s|@bindir@|{{ prefixdir }}|" cosmic-applet-status-area/data/com.system76.CosmicStatusNotifierWatcher.service.in > cosmic-applet-status-area/data/com.system76.CosmicStatusNotifierWatcher.service
+-    install -Dm0644 cosmic-applet-status-area/data/com.system76.CosmicStatusNotifierWatcher.service {{ libdir }}/systemd/user/com.system76.CosmicStatusNotifierWatcher.service
+ 
+ _install_secret_agent_policy:
+     install -Dm0644 cosmic-applet-network/data/dbus-1/system.d/com.system76.CosmicSettings.Applet.NetworkManager.SecretAgent.conf {{ sharedir }}/dbus-1/system.d/com.system76.CosmicSettings.Applet.NetworkManager.SecretAgent.conf
+diff -ruN a/cosmic-comp/Cargo.toml b/cosmic-comp/Cargo.toml
+--- a/cosmic-comp/Cargo.toml	2026-11-11 13:27:43.931316498 -0700
++++ b/cosmic-comp/Cargo.toml	2026-11-11 13:27:59.074967738 -0700
+@@ -120,7 +120,7 @@
+ 
+ [features]
+ debug = ["egui", "egui_plot", "smithay-egui", "anyhow/backtrace"]
+-default = ["systemd"]
++default = ["logind"]
+ logind = ["logind-zbus"]
+ systemd = ["libsystemd", "logind", "tracing-journald"]
+ profile-with-tracy = ["profiling/profile-with-tracy", "tracy-client/default"]
+diff -ruN a/cosmic-greeter/Cargo.toml b/cosmic-greeter/Cargo.toml
+--- a/cosmic-greeter/Cargo.toml	2026-11-11 13:27:43.942080229 -0700
++++ b/cosmic-greeter/Cargo.toml	2026-11-11 13:28:01.684986027 -0700
+@@ -96,8 +96,8 @@
+ features = ["tokio-codec"]
+ 
+ [features]
+-default = ["logind", "networkmanager", "upower", "systemd"]
+-logind = ["logind-zbus", "systemd"]
++default = ["logind", "networkmanager", "upower"]
++logind = ["logind-zbus"]
+ systemd = ["tracing-journald"]
+ networkmanager = ["cosmic-dbus-networkmanager"]
+ upower = ["upower_dbus"]
+diff -ruN a/cosmic-greeter/daemon/Cargo.toml b/cosmic-greeter/daemon/Cargo.toml
+--- a/cosmic-greeter/daemon/Cargo.toml	2026-11-11 13:27:43.951881708 -0700
++++ b/cosmic-greeter/daemon/Cargo.toml	2026-11-11 13:28:04.238003925 -0700
+@@ -31,5 +31,5 @@
+ zbus_systemd = { version = "0.26000.0", features = ["home1"], optional = true }
+ 
+ [features]
+-default = ["systemd"]
++default = []
+ systemd = ["tracing-journald", "zbus_systemd"]
+diff -ruN a/cosmic-greeter/justfile b/cosmic-greeter/justfile
+--- a/cosmic-greeter/justfile	2026-11-11 13:27:43.961991778 -0700
++++ b/cosmic-greeter/justfile	2026-11-11 13:28:06.811021971 -0700
+@@ -77,8 +77,6 @@
+ 
+ # Installs files
+ install: install-debian
+-    install -Dm0644 {{sysusers-src}} {{sysusers-dst}}
+-    install -Dm0644 {{tmpfiles-src}} {{tmpfiles-dst}}
+ 
+ # Uninstalls installed files
+ uninstall:
+diff -ruN a/cosmic-idle/src/main.rs b/cosmic-idle/src/main.rs
+--- a/cosmic-idle/src/main.rs	2026-11-11 13:27:44.042553771 -0700
++++ b/cosmic-idle/src/main.rs	2026-11-11 13:28:53.309349487 -0700
+@@ -182,7 +182,7 @@
+             let command = self
+                 .system_actions
+                 .get(&shortcuts::action::System::Suspend)
+-                .map_or("systemctl suspend", |s| s.as_str());
++                .map_or("loginctl suspend", |s| s.as_str());
+             crate::run_command(command.to_string());
+         }
+     }
+diff -ruN a/cosmic-notifications/Cargo.toml b/cosmic-notifications/Cargo.toml
+--- a/cosmic-notifications/Cargo.toml	2026-11-11 13:27:43.972095338 -0700
++++ b/cosmic-notifications/Cargo.toml	2026-11-11 13:28:09.627041731 -0700
+@@ -38,7 +38,7 @@
+ 
+ [features]
+ systemd = ["dep:tracing-journald"]
+-default = ["systemd"]
++default = []
+ 
+ [workspace]
+ members = ["cosmic-notifications-util", "cosmic-notifications-config"]
+diff -ruN a/cosmic-player/build.rs b/cosmic-player/build.rs
+--- a/cosmic-player/build.rs	2026-11-11 13:27:44.060495277 -0700
++++ b/cosmic-player/build.rs	2026-11-11 13:28:59.163390901 -0700
+@@ -1,10 +1,7 @@
+-use vergen::EmitBuilder;
+ use std::{env, fs, path::PathBuf};
+ use xdgen::{App, Context, FluentString};
+ 
+ fn main() {
+-    EmitBuilder::builder().git_sha(true).emit().unwrap();
+-
+     let id = "com.system76.CosmicPlayer";
+     let ctx = Context::new("i18n", env::var("CARGO_PKG_NAME").unwrap()).unwrap();
+     let app = App::new(FluentString("xdg-name"))
+diff -ruN a/cosmic-session/Cargo.toml b/cosmic-session/Cargo.toml
+--- a/cosmic-session/Cargo.toml	2026-11-11 13:27:43.898056097 -0700
++++ b/cosmic-session/Cargo.toml	2026-11-11 13:27:46.421879201 -0700
+@@ -47,5 +47,5 @@
+ [features]
+ systemd = ["dep:zbus_systemd", "dep:tracing-journald"]
+ logind = ["dep:logind-zbus"]
+-default = ["logind", "systemd"]
++default = ["logind", "autostart"]
+ autostart = ["dep:shell-words", "dep:dirs", "dep:freedesktop-desktop-entry"]
+diff -ruN a/cosmic-session/data/start-cosmic b/cosmic-session/data/start-cosmic
+--- a/cosmic-session/data/start-cosmic	2026-11-11 13:27:43.921128100 -0700
++++ b/cosmic-session/data/start-cosmic	2026-11-11 13:27:57.013953303 -0700
+@@ -2,22 +2,6 @@
+ 
+ set -e
+ 
+-# From: https://people.debian.org/~mpitt/systemd.conf-2016-graphical-session.pdf
+-
+-if command -v systemctl >/dev/null; then
+-    # robustness: if the previous graphical session left some failed units,
+-    # reset them so that they don't break this startup
+-    for unit in $(systemctl --user --no-legend --state=failed --plain list-units | cut -f1 -d' '); do
+-        partof="$(systemctl --user show -p PartOf --value "$unit")"
+-        for target in cosmic-session.target graphical-session.target; do
+-            if [ "$partof" = "$target" ]; then
+-                systemctl --user reset-failed "$unit"
+-                break
+-            fi
+-        done
+-    done
+-fi
+-
+ # use the user's preferred shell to acquire environment variables
+ # see: https://github.com/pop-os/cosmic-session/issues/23
+ if [ -n "${SHELL}" ]; then
+@@ -77,32 +61,6 @@
+     fi
+ fi
+ 
+-if command -v systemctl >/dev/null; then
+-    # Import some variables that we explicitly want to have available
+-    # in the user session.
+-    systemctl --user import-environment XDG_SESSION_TYPE XDG_CURRENT_DESKTOP DCONF_PROFILE SSH_AUTH_SOCK
+-
+-    # For environment variables already imported into the user's
+-    # session, if the value imported differs from the value in this
+-    # environment, update it.
+-    systemctl --user show-environment | while IFS= read -r env_var; do
+-        env_var_name="${env_var%%=*}"
+-        env_var_value="$(printenv "${env_var_name}" || true)"
+-
+-        # Skip current iteration if the environment variable's value
+-        # in the current envionment is unset.
+-        if [ -z "${env_var_value}" ]; then
+-            continue
+-        fi
+-
+-        # Skip updating variables where systemd already holds this exact value.
+-        if [ "${env_var}" = "${env_var_name}=${env_var_value}" ]; then
+-            continue
+-        fi
+-        systemctl --user import-environment "${env_var_name}" || true
+-    done
+-fi
+-
+ # Run cosmic-session
+ if [ -z "${DBUS_SESSION_BUS_ADDRESS}" ]; then
+     exec /usr/bin/dbus-run-session -- /usr/bin/cosmic-session
+diff -ruN a/cosmic-session/Justfile b/cosmic-session/Justfile
+--- a/cosmic-session/Justfile	2026-11-11 13:27:43.910183602 -0700
++++ b/cosmic-session/Justfile	2026-11-11 13:27:48.782895706 -0700
+@@ -38,9 +38,6 @@
+     install -Dm0755 data/start-cosmic {{ bindir }}/start-cosmic
+     sed -i "s|DCONF_PROFILE=cosmic|DCONF_PROFILE={{ cosmic_dconf_profile }}|" {{ bindir }}/start-cosmic
+ 
+-    # systemd target
+-    install -Dm0644 data/cosmic-session.target {{ systemddir }}/cosmic-session.target
+-
+     # session
+     install -Dm0644 data/cosmic.desktop {{ sessiondir }}/cosmic.desktop
+ 
+diff -ruN a/cosmic-settings/cosmic-settings/Cargo.toml b/cosmic-settings/cosmic-settings/Cargo.toml
+--- a/cosmic-settings/cosmic-settings/Cargo.toml	2026-11-11 13:28:31.968710228 -0700
++++ b/cosmic-settings/cosmic-settings/Cargo.toml	2026-11-11 13:28:34.382215859 -0700
+@@ -112,11 +112,12 @@
+ optional = true
+ 
+ [features]
+-default = ["a11y", "avif", "linux", "single-instance", "wgpu", "systemd"]
++default = ["a11y", "avif", "linux", "single-instance", "wgpu", "dinit"]
+ avif = ["image/avif-native"]
+ gettext = ["dep:gettext-rs"]
+ systemd = []
+ openrc = []
++dinit = []
+ 
+ # Default features for Linux
+ linux = [
+diff -ruN a/cosmic-settings/cosmic-settings/src/main.rs b/cosmic-settings/cosmic-settings/src/main.rs
+--- a/cosmic-settings/cosmic-settings/src/main.rs	2026-11-11 13:27:44.023932866 -0700
++++ b/cosmic-settings/cosmic-settings/src/main.rs	2026-11-11 13:28:39.383251126 -0700
+@@ -7,10 +7,10 @@
+ #![allow(clippy::cast_lossless)]
+ #![allow(clippy::too_many_lines)]
+ 
+-#[cfg(not(any(feature = "systemd", feature = "openrc")))]
++#[cfg(not(any(feature = "systemd", feature = "openrc", feature = "dinit")))]
+ compile_error!(
+     "At least one service manager feature must be enabled. \
+-     Enable 'systemd' or 'openrc' for bluetooth service management."
++     Enable 'systemd', 'openrc' or 'dinit' for bluetooth service management."
+ );
+ 
+ pub mod app;
+diff -ruN a/cosmic-settings/cosmic-settings/src/service_manager.rs b/cosmic-settings/cosmic-settings/src/service_manager.rs
+--- a/cosmic-settings/cosmic-settings/src/service_manager.rs	2026-11-11 13:27:44.033348599 -0700
++++ b/cosmic-settings/cosmic-settings/src/service_manager.rs	2026-11-11 13:29:09.272422297 -0700
+@@ -290,6 +290,82 @@
+     }
+ }
+ 
++/// Dinit implementation of ServiceManager.
++#[cfg(feature = "dinit")]
++pub struct DinitServiceManager {
++    service_name: String,
++}
++
++#[cfg(feature = "dinit")]
++impl DinitServiceManager {
++    pub fn new(service_name: impl Into<String>) -> Self {
++        Self {
++            service_name: service_name.into(),
++        }
++    }
++
++    fn dinit_name(&self) -> &str {
++        // Chimera's BlueZ service is named bluetoothd.
++        if self.service_name == "bluetooth" {
++            "bluetoothd"
++        } else {
++            &self.service_name
++        }
++    }
++
++    fn helper(action: &str, service: &str) -> std::process::Command {
++        let mut command = std::process::Command::new("pkexec");
++        command.args(["/usr/libexec/cosmic-dinit-service", action, service]);
++        command
++    }
++}
++
++#[cfg(feature = "dinit")]
++impl ServiceManager for DinitServiceManager {
++    fn is_enabled(&self) -> bool {
++        let name = self.dinit_name();
++        std::path::Path::new("/usr/lib/dinit.d/boot.d")
++            .join(name)
++            .exists()
++            || std::path::Path::new("/etc/dinit.d/boot.d")
++                .join(name)
++                .exists()
++    }
++
++    fn is_active(&self) -> bool {
++        Self::helper("is-active", self.dinit_name())
++            .status()
++            .map(|status| status.success())
++            .unwrap_or(false)
++    }
++
++    fn activate(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
++        let service = self.dinit_name().to_owned();
++        Box::pin(async move {
++            let mut command = tokio::process::Command::new("pkexec");
++            command.args(["/usr/libexec/cosmic-dinit-service", "start", service.as_str()]);
++            let result = command.status().await;
++            log_command_result(&result, "dinitctl start", &service);
++        })
++    }
++
++    fn enable(&self) -> Pin<Box<dyn Future<Output = ()> + Send>> {
++        let service = self.dinit_name().to_owned();
++        Box::pin(async move {
++            let mut command = tokio::process::Command::new("pkexec");
++            command.args(["/usr/libexec/cosmic-dinit-service", "enable", service.as_str()]);
++            let result = command.status().await;
++            log_command_result(&result, "dinitctl enable", &service);
++        })
++    }
++
++    fn is_installed(&self) -> bool {
++        let name = self.dinit_name();
++        std::path::Path::new("/usr/lib/dinit.d").join(name).exists()
++            || std::path::Path::new("/etc/dinit.d").join(name).exists()
++    }
++}
++
+ /// Detect the running service manager and create a manager for the named service.
+ ///
+ /// Checks runtime directories (`/run/systemd/system`, `/run/openrc`) to determine
+@@ -317,12 +393,22 @@
+         }
+     }
+ 
++    #[cfg(feature = "dinit")]
++    {
++        if std::path::Path::new("/run/dinitctl").exists() {
++            tracing::debug!("Detected dinit service manager via /run/dinitctl");
++            return Ok(Box::new(DinitServiceManager::new(service_name)));
++        }
++    }
++
+     {
+         let mut checked = Vec::new();
+         #[cfg(feature = "systemd")]
+         checked.push("systemd (/run/systemd/system)");
+         #[cfg(feature = "openrc")]
+         checked.push("openrc (/run/openrc)");
++        #[cfg(feature = "dinit")]
++        checked.push("dinit (/run/dinitctl)");
+ 
+         Err(format!(
+             "Could not detect a running service manager. Checked for: {}. \
+diff -ruN a/cosmic-settings-daemon/data/system_actions.ron b/cosmic-settings-daemon/data/system_actions.ron
+--- a/cosmic-settings-daemon/data/system_actions.ron	2026-11-11 13:39:45.287593872 -0700
++++ b/cosmic-settings-daemon/data/system_actions.ron	2026-11-11 13:39:45.292205419 -0700
+@@ -36,7 +36,7 @@
+     /// Takes a screenshot
+     Screenshot: "cosmic-screenshot",
+     /// Suspend the system
+-    Suspend: "systemctl suspend",
++    Suspend: "loginctl suspend",
+     /// Toggles the screen reader
+     ScreenReader: "busctl --user call com.system76.CosmicSettingsDaemon /com/system76/CosmicSettingsDaemon com.system76.CosmicSettingsDaemon ScreenReader",
+     /// Opens the system default terminal
+diff -ruN a/cosmic-store/Cargo.toml b/cosmic-store/Cargo.toml
+--- a/cosmic-store/Cargo.toml	2026-11-11 13:27:44.004044797 -0700
++++ b/cosmic-store/Cargo.toml	2026-11-11 13:28:20.085115201 -0700
+@@ -66,7 +66,7 @@
+ #todo : add a11y back to default
+ default = [
+     "dbus-config",
+-    "desktop-systemd-scope",
++    "desktop",
+     "flatpak",
+     "logind",
+     "notify",
+diff -ruN a/xdg-desktop-portal-cosmic/Cargo.toml b/xdg-desktop-portal-cosmic/Cargo.toml
+--- a/xdg-desktop-portal-cosmic/Cargo.toml	2026-11-11 13:27:43.983447197 -0700
++++ b/xdg-desktop-portal-cosmic/Cargo.toml	2026-11-11 13:28:12.295060461 -0700
+@@ -5,7 +5,7 @@
+ license = "GPL-3.0-or-later"
+ 
+ [features]
+-default = ["systemd"]
++default = []
+ wgpu = ["libcosmic/wgpu"]
+ systemd = ["dep:tracing-journald"]
+ 
+diff -ruN a/xdg-desktop-portal-cosmic/justfile b/xdg-desktop-portal-cosmic/justfile
+--- a/xdg-desktop-portal-cosmic/justfile	2026-11-11 13:27:43.994270903 -0700
++++ b/xdg-desktop-portal-cosmic/justfile	2026-11-11 13:28:17.427096515 -0700
+@@ -48,8 +48,6 @@
+     install -Dm0755 {{ bin-src }} {{ bin-dst }}
+     sed 's|@libexecdir@|{{ libexecdir }}|' data/dbus-1/{{ appid }}.service.in \
+         | install -Dm0644 /dev/stdin {{ data-dir }}/dbus-1/services/{{ appid }}.service
+-    sed 's|@libexecdir@|{{ libexecdir }}|' data/{{ appid }}.service.in \
+-        | install -Dm0644 /dev/stdin {{ lib-dir }}/systemd/user/{{ appid }}.service
+     install -Dm0644 data/cosmic.portal {{ data-dir }}/xdg-desktop-portal/portals/cosmic.portal
+     install -Dm0644 data/cosmic-portals.conf {{ data-dir }}/xdg-desktop-portal/cosmic-portals.conf
+     find 'data'/'icons' -type f -exec echo {} \; \

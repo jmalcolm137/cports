@@ -1,0 +1,31 @@
+#!/bin/sh
+set -eu
+
+action="${1:-}"
+service="${2:-}"
+
+case "$service" in
+    bluetoothd) ;;
+    *)
+        echo "cosmic-dinit-service: unsupported service '$service'" >&2
+        exit 64
+        ;;
+esac
+
+case "$action" in
+    is-active)
+        exec dinitctl --quiet is-started "$service"
+        ;;
+    start)
+        exec dinitctl start "$service"
+        ;;
+    enable)
+        mkdir -p /usr/lib/dinit.d/boot.d
+        ln -sfn "../$service" "/usr/lib/dinit.d/boot.d/$service"
+        exec dinitctl start "$service"
+        ;;
+    *)
+        echo "cosmic-dinit-service: unsupported action '$action'" >&2
+        exit 64
+        ;;
+esac

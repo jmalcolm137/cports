@@ -1,0 +1,9 @@
+// Allow the COSMIC service helper to query and control the whitelisted dinit
+// services without a password prompt for active local desktop users.
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.policykit.exec" &&
+        subject.active && subject.local &&
+        action.lookup("program") == "/usr/libexec/cosmic-dinit-service") {
+        return polkit.Result.YES;
+    }
+});
