@@ -139,9 +139,7 @@ def _sdk_archive(self):
     )
     if not matches:
         self.error("source build produced no dotnet SDK archive", bt=True)
-    return str(
-        self.chroot_cwd / "artifacts/assets/Release" / matches[0].name
-    )
+    return str(self.chroot_cwd / "artifacts/assets/Release" / matches[0].name)
 
 
 def post_patch(self):
@@ -348,9 +346,7 @@ def install(self):
 
     self.install_file(self.files_path / "dotnet.sh", "etc/profile.d")
     self.install_file(self.files_path / "install_location", "etc/dotnet")
-    self.install_file(
-        self.files_path / "install_location_x64", "etc/dotnet"
-    )
+    self.install_file(self.files_path / "install_location_x64", "etc/dotnet")
 
     self.install_completion(
         "src/sdk/scripts/register-completions.bash", "bash", "dotnet"

@@ -61,6 +61,7 @@ else:
         f"-DZIG_TARGET_TRIPLE={_zig_target}",
     ]
 
+
 def check(self):
     self.do(
         self.make_dir + "/stage3/bin/zig",

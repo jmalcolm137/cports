@@ -63,13 +63,18 @@ def install(self):
     self.install_license("LICENSE")
 
     self.install_file(
-        "build/sparted", "usr/lib/sde/bin", name="PartitionEditor.real", mode=0o755
+        "build/sparted",
+        "usr/lib/sde/bin",
+        name="PartitionEditor.real",
+        mode=0o755,
     )
     self.install_file(
         self.files_path / "PartitionEditor", "usr/lib/sde/bin", mode=0o755
     )
     self.install_dir("usr/bin")
-    self.install_link("usr/bin/PartitionEditor", "../lib/sde/bin/PartitionEditor")
+    self.install_link(
+        "usr/bin/PartitionEditor", "../lib/sde/bin/PartitionEditor"
+    )
     self.install_link("usr/bin/sparted", "../lib/sde/bin/PartitionEditor")
 
     self.install_file(

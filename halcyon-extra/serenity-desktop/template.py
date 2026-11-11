@@ -128,7 +128,9 @@ def prepare(self):
         "serenity-desktop-environment/third_party/wlroots/"
         "protocol/wlr-layer-shell-unstable-v1.xml"
     )
-    x.write_text(x.read_text().replace('name="namespace"', 'name="layer_namespace"'))
+    x.write_text(
+        x.read_text().replace('name="namespace"', 'name="layer_namespace"')
+    )
 
     # The distro does not install generated protocol headers, and its C
     # headers need the same C++ compatibility edits the SDE's build script
@@ -141,7 +143,9 @@ def prepare(self):
     # wlroots. Point it at the distro package instead.
     pcdir = wlr / "install/lib/pkgconfig"
     self.do("mkdir", "-p", pcdir)
-    self.do("cp", "/usr/lib/pkgconfig/wlroots-0.20.pc", pcdir / "wlroots-0.20.pc")
+    self.do(
+        "cp", "/usr/lib/pkgconfig/wlroots-0.20.pc", pcdir / "wlroots-0.20.pc"
+    )
 
     patched = self.srcdir / (
         "serenity-desktop-environment/third_party/wlroots/patched-include"
@@ -150,7 +154,9 @@ def prepare(self):
         p.write_text(strip_static(p.read_text()))
 
     p = patched / "wlr/types/wlr_layer_shell_v1.h"
-    p.write_text(p.read_text().replace("char *namespace;", "char *layer_namespace;"))
+    p.write_text(
+        p.read_text().replace("char *namespace;", "char *layer_namespace;")
+    )
 
     # Generate the server-side protocol headers the public wlroots headers
     # include (layer-shell and output-power-management).
@@ -251,7 +257,9 @@ def install(self):
         self.chroot_destdir / "usr/lib/sde/bin/WindowServer",
     )
     self.install_file(
-        self.files_path / "WindowServer.ini", "usr/lib/sde/share/etc", mode=0o644
+        self.files_path / "WindowServer.ini",
+        "usr/lib/sde/share/etc",
+        mode=0o644,
     )
     self.install_file(
         self.files_path / "50-sde-network.rules",

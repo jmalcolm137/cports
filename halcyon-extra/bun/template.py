@@ -71,8 +71,6 @@ def install(self):
     self.install_file(
         "bun.fish", "usr/share/fish/vendor_completions.d", name="bun.fish"
     )
-    self.install_file(
-        "bun.zsh", "usr/share/zsh/site-functions", name="_bun"
-    )
+    self.install_file("bun.zsh", "usr/share/zsh/site-functions", name="_bun")
 
     self.install_license(self.files_path / "LICENSE.md")

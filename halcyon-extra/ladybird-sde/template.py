@@ -122,10 +122,7 @@ def prepare(self):
     )
 
     # vcpkg downloads a glibc-only gn; use the distribution's musl build
-    gnport = (
-        self.cwd
-        / "Meta/CMake/vcpkg/overlay-ports/vcpkg-tool-gn"
-    )
+    gnport = self.cwd / "Meta/CMake/vcpkg/overlay-ports/vcpkg-tool-gn"
     gnport.mkdir(parents=True, exist_ok=True)
     (gnport / "vcpkg.json").write_text(
         """{
@@ -264,12 +261,8 @@ def install(self):
         "x64-linux-dynamic/lib/.",
         f"{self.chroot_destdir}/usr/lib/sde/lib/ladybird/",
     )
-    self.uninstall(
-        "usr/lib/sde/lib/ladybird/*.a", glob=True, missing_ok=True
-    )
-    self.uninstall(
-        "usr/lib/sde/lib/ladybird/pkgconfig", missing_ok=True
-    )
+    self.uninstall("usr/lib/sde/lib/ladybird/*.a", glob=True, missing_ok=True)
+    self.uninstall("usr/lib/sde/lib/ladybird/pkgconfig", missing_ok=True)
 
 
 def post_install(self):
@@ -292,10 +285,7 @@ def post_install(self):
                     "--force-rpath",
                     "--set-rpath",
                     "$ORIGIN/../lib/ladybird",
-                    str(
-                        self.chroot_destdir
-                        / entry.relative_to(self.destdir)
-                    ),
+                    str(self.chroot_destdir / entry.relative_to(self.destdir)),
                 )
 
     libdir = self.destdir / "usr/lib/sde/lib/ladybird"
@@ -307,8 +297,5 @@ def post_install(self):
                     "--force-rpath",
                     "--set-rpath",
                     "$ORIGIN",
-                    str(
-                        self.chroot_destdir
-                        / entry.relative_to(self.destdir)
-                    ),
+                    str(self.chroot_destdir / entry.relative_to(self.destdir)),
                 )

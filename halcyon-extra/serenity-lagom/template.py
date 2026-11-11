@@ -291,9 +291,7 @@ def patch(self):
         apply_args=["--recount", "-C1"],
     )
 
-    lg_patches = sorted(
-        (self.template_path / "patches-libgui").glob("*.patch")
-    )
+    lg_patches = sorted((self.template_path / "patches-libgui").glob("*.patch"))
     if lg_patches:
         patch.patch(
             self,
@@ -355,7 +353,9 @@ def install(self):
         },
     )
     self.install_license("serenity-desktop-environment/LICENSE")
-    self.install_license("libgui-wayland/LICENSE", name="LICENSE.libgui-wayland")
+    self.install_license(
+        "libgui-wayland/LICENSE", name="LICENSE.libgui-wayland"
+    )
 
 
 @subpackage("serenity-lagom-devel")

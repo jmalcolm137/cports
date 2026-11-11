@@ -101,7 +101,11 @@ def install(self):
         self.install_file(
             self.files_path / "00-gnu-path.sh", profile_dir, mode=0o644
         )
-    self.install_file(self.files_path / "dot.mkshrc", "etc/skel", name=".mkshrc", mode=0o644)
+    self.install_file(
+        self.files_path / "dot.mkshrc", "etc/skel", name=".mkshrc", mode=0o644
+    )
     # ENV=/etc/mkshrc is set in /etc/environment; POSIX shells that honour ENV
     # (including chimerautils sh) source the overlay from here.
-    self.install_file(self.files_path / "mkshrc", "etc", name="mkshrc", mode=0o644)
+    self.install_file(
+        self.files_path / "mkshrc", "etc", name="mkshrc", mode=0o644
+    )

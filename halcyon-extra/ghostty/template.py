@@ -38,11 +38,7 @@ def prepare(self):
     self.do(
         "sh",
         "nix/build-support/fetch-zig-cache.sh",
-        env={
-            "ZIG_GLOBAL_CACHE_DIR": str(
-                self.chroot_cwd / ".zig-cache-fetch"
-            )
-        },
+        env={"ZIG_GLOBAL_CACHE_DIR": str(self.chroot_cwd / ".zig-cache-fetch")},
         allow_network=True,
     )
     self.cp(self.files_path / "extract-zig-cache.sh", ".")
@@ -90,6 +86,8 @@ def post_install(self):
     # libghostty-vt package owns those files
     self.uninstall("usr/include/ghostty", missing_ok=True)
     self.uninstall("usr/lib/libghostty-vt*", glob=True, missing_ok=True)
-    self.uninstall("usr/share/pkgconfig/libghostty-vt*", glob=True, missing_ok=True)
+    self.uninstall(
+        "usr/share/pkgconfig/libghostty-vt*", glob=True, missing_ok=True
+    )
     # Chimera uses dinit; the systemd user unit is not useful here
     self.uninstall("usr/lib/systemd", missing_ok=True)
