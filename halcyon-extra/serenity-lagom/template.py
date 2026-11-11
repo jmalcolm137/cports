@@ -1,17 +1,12 @@
 pkgname = "serenity-lagom"
 pkgver = "0.1.0"
 pkgrel = 3
-pkgdesc = "SerenityOS userland framework, applications and resources for SDE"
-license = "BSD-2-Clause"
-url = "https://github.com/jmalcolm137/libgui-wayland"
-
 # The SDE release is built from these exact revisions; do not update one
 # without the other (see the upstream PKGBUILDs in Meta/packaging/aur).
 # libgui-wayland is newer than the v0.1.0 release: ladybird-sde needs the
 # multi-format clipboard, text-input-v3 and backing-store scale APIs.
 _libgui_commit = "f96f68b24beaa4c1c6e3176fa432a404e086a8b1"
 _serenity_commit = "054963e8116a3b13797318c5251313c1b8fa4caf"
-
 hostmakedepends = [
     "bash",
     "bison",
@@ -74,28 +69,30 @@ depends = [
     "wayland",
     "xcb-util-wm",
 ]
-# Everything under usr/lib/sde is a self-contained prefix and is not meant to
-# be fed through the distribution's usual soname/dependency mapping.
-# 0008 keeps a disabled cursor highlight disabled when Mouse Settings applies
-# the other tabs, and uses the SerenityOS red/110 defaults when first enabled.
-options = ["!check", "!cross", "!debug", "!lto"]
-hardening = ["!int"]
-
+pkgdesc = "SerenityOS userland framework, applications and resources for SDE"
+license = "BSD-2-Clause"
+url = "https://github.com/jmalcolm137/libgui-wayland"
 source = [
     f"https://github.com/jmalcolm137/libgui-wayland/archive/{_libgui_commit}.tar.gz",
     f"https://github.com/jmalcolm137/serenity/archive/{_serenity_commit}.tar.gz",
     f"https://github.com/jmalcolm137/serenity-desktop-environment/archive/refs/tags/v{pkgver}.tar.gz",
-]
-sha256 = [
-    "76a5a7428ad9855311c7e15ec2622f486bbd1f93aa0ed910cd82363a7c2850e7",
-    "15f3dffe50a537c15c465b5f38773637d0bcea670a7ebd31652380d470e4a5b9",
-    "abec19a8c4637218c30cb0667a3e97b29533d5dd4b3ea6dc6aaf7d1b49f67438",
 ]
 source_paths = [
     "libgui-wayland",
     "libgui-wayland/serenity",
     "serenity-desktop-environment",
 ]
+sha256 = [
+    "76a5a7428ad9855311c7e15ec2622f486bbd1f93aa0ed910cd82363a7c2850e7",
+    "15f3dffe50a537c15c465b5f38773637d0bcea670a7ebd31652380d470e4a5b9",
+    "abec19a8c4637218c30cb0667a3e97b29533d5dd4b3ea6dc6aaf7d1b49f67438",
+]
+hardening = ["!int"]
+# Everything under usr/lib/sde is a self-contained prefix and is not meant to
+# be fed through the distribution's usual soname/dependency mapping.
+# 0008 keeps a disabled cursor highlight disabled when Mouse Settings applies
+# the other tabs, and uses the SerenityOS red/110 defaults when first enabled.
+options = ["!check", "!cross", "!debug", "!lto"]
 
 # Lagom targets needed before the SDE shim can be compiled. These are the
 # targets upstream's scripts/build-libgui.sh builds in its first phase.

@@ -2,10 +2,8 @@ pkgname = "opencode"
 pkgver = "2.2.5"
 pkgrel = 2
 archs = ["x86_64"]
-
 _nodepty_ver = "1.2.0-beta.12"
 _ffirs_commit = "d93e1748d68f5f688e9d57cb8efa8e4007ac29f4"
-
 hostmakedepends = [
     "bash",
     "cargo",

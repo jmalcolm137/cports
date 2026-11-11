@@ -2,16 +2,12 @@ pkgname = "crush"
 pkgver = "0.100.0"
 pkgrel = 0
 archs = ["x86_64"]
-
 depends = ["ca-certificates"]
-
 pkgdesc = "Glamorous AI coding agent for the terminal"
 license = "custom:crush"
 url = "https://github.com/charmbracelet/crush"
-
 source = f"{url}/releases/download/v{pkgver}/crush_{pkgver}_Linux_x86_64.tar.gz"
 sha256 = "122d4afe0e3bb0fc4c571f58b0c08d485c8733f272e962a02064c2150cd7a152"
-
 # Prebuilt Go release binary; there is no test suite in the archive and the
 # binary is already stripped.
 options = ["!check", "!strip"]

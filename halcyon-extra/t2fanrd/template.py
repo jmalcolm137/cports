@@ -8,12 +8,9 @@ makedepends = ["dinit-chimera", "rust-std"]
 pkgdesc = "Fan control daemon for Apple T2 Macs"
 license = "GPL-3.0-or-later"
 url = "https://github.com/GnomedDev/T2FanRD"
-
 _commit = "48baf962697ec3d4d969c74cf601ee8e15b7aeaa"
-
 source = f"{url}/archive/{_commit}.tar.gz"
 sha256 = "33cd1644bd7602587b0d486a4396de6bdaae3d704d91e1e762604980beaa6e84"
-
 # no test suite
 options = ["!check"]
 

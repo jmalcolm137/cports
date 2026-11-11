@@ -2,10 +2,8 @@ pkgname = "dotnet10"
 pkgver = "10.0.113"
 pkgrel = 0
 archs = ["x86_64"]
-
 _bootstrap = "10.0.113-r0"
 _gccver = "15.2.0-r9"
-
 hostmakedepends = [
     "bash",
     "cmake",
@@ -13,8 +11,8 @@ hostmakedepends = [
     "findutils",
     "ggrep",
     "git",
-    "gtar",
     "grpc",
+    "gtar",
     "jq",
     "ninja",
     "nodejs",
@@ -42,10 +40,6 @@ depends = ["ca-certificates", "heimdal-gssapi-libs", "icu-libs"]
 pkgdesc = ".NET SDK and runtime"
 license = "MIT"
 url = "https://dotnet.microsoft.com"
-
-options = ["!check", "!cross", "!lto", "etcfiles"]
-hardening = ["!int"]
-
 source = [
     f"https://github.com/dotnet/dotnet/archive/refs/tags/v{pkgver}.tar.gz",
     f"https://dl-cdn.alpinelinux.org/alpine/edge/community/x86_64/dotnet10-stage0-bootstrap-{_bootstrap}.apk>bootstrap.tar.gz",
@@ -67,6 +61,9 @@ sha256 = [
     "adfebfc0c4b80c293be8cc802a7fb73d7f5854f01b47ff1f40282d18f255b357",
     "01c9609197de10519ceb204a09d1efa54baad145f65bf00ba0908086692ca3fe",
 ]
+hardening = ["!int"]
+# the full source-build test suite needs network access and a bootstrapped SDK
+options = ["!check", "!cross", "!lto", "etcfiles"]
 
 _sdkver = "10.0.113"
 _sdkroot = "/usr/lib/dotnet"

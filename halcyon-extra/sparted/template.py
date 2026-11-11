@@ -1,46 +1,40 @@
 pkgname = "sparted"
 pkgver = "0.1.0"
 pkgrel = 1
-pkgdesc = "LibGUI/GParted port for the Serenity Desktop Environment"
-license = "GPL-2.0-or-later"
-url = "https://github.com/jmalcolm137/sparted"
-
 _commit = "ddcf069b8aa9bc9aeb59d9fd1306697e1a076410"
-
 hostmakedepends = ["gmake"]
 makedepends = [
     "parted-devel",
     "serenity-lagom-devel",
 ]
 depends = [
-    "serenity-lagom",
-    "polkit",
-    "util-linux",
-    "e2fsprogs",
-    "dosfstools",
-    "exfatprogs",
-    "ntfs-3g",
     "btrfs-progs",
-    "xfsprogs",
+    "dosfstools",
+    "e2fsprogs",
+    "exfatprogs",
     "f2fs-tools",
+    "hfsutils",
     "jfsutils",
     "lvm2",
-    "hfsutils",
+    "ntfs-3g",
+    "polkit",
+    "serenity-lagom",
+    "util-linux",
+    "xfsprogs",
 ]
-
 # libwindowserver.so does not carry a SONAME
 ignore_shlibs = ["libwindowserver.so"]
-
+pkgdesc = "LibGUI/GParted port for the Serenity Desktop Environment"
+license = "GPL-2.0-or-later"
+url = "https://github.com/jmalcolm137/sparted"
+source = f"{url}/archive/{_commit}.tar.gz"
+sha256 = "9db2ef074333f8995d9fe10b220bc026c6054fdd838a5a1be0c5d6d0c8c0ffce"
 # the project requires C++26 and is built without exceptions
 tool_flags = {
     "CXXFLAGS": ["-std=c++26", "-fno-exceptions", "-Wno-literal-suffix"],
 }
-
 # the UI tests need a compositor and the backend tests expect a full userland
 options = ["!check"]
-
-source = f"{url}/archive/{_commit}.tar.gz"
-sha256 = "9db2ef074333f8995d9fe10b220bc026c6054fdd838a5a1be0c5d6d0c8c0ffce"
 
 
 def build(self):

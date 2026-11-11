@@ -1,14 +1,9 @@
 pkgname = "serenity-desktop"
 pkgver = "0.1.0"
 pkgrel = 4
-pkgdesc = "SerenityOS desktop environment on Wayland"
-license = "BSD-2-Clause"
-url = "https://github.com/jmalcolm137/serenity-desktop-environment"
-
 # Used only as the source of the wlroots protocol XMLs. The library and public
 # headers come from the distribution's wlroots0.20 packages.
 _wlroots_ver = "0.20.2"
-
 hostmakedepends = [
     "bash",
     "cmake",
@@ -79,25 +74,27 @@ depends = [
 # Provided by serenity-lagom; the shlib name is unversioned and not in a
 # standard libdir, so the scanner cannot infer the provider.
 ignore_shlibs = ["libwindowserver.so"]
-# 0005/0006 use the SerenityOS cursor artwork (converted to Xcursor themes)
-# and the legacy cursor names that resolve even without a system Xcursor theme.
-# 0007 keeps compositor chrome (cursor highlight, HUDs) out of pointer
-# hit-testing so it cannot swallow clicks.
-options = ["!check", "!cross", "!debug", "!lto"]
-hardening = ["!int"]
-
+pkgdesc = "SerenityOS desktop environment on Wayland"
+license = "BSD-2-Clause"
+url = "https://github.com/jmalcolm137/serenity-desktop-environment"
 source = [
     f"https://github.com/jmalcolm137/serenity-desktop-environment/archive/refs/tags/v{pkgver}.tar.gz",
     f"https://gitlab.freedesktop.org/wlroots/wlroots/-/releases/{_wlroots_ver}/downloads/wlroots-{_wlroots_ver}.tar.gz",
-]
-sha256 = [
-    "abec19a8c4637218c30cb0667a3e97b29533d5dd4b3ea6dc6aaf7d1b49f67438",
-    "80c567d2ed4efb2cfa6b077f22c7a710d9c78ba4e185a75e8694001114af0733",
 ]
 source_paths = [
     "serenity-desktop-environment",
     "serenity-desktop-environment/third_party/wlroots",
 ]
+sha256 = [
+    "abec19a8c4637218c30cb0667a3e97b29533d5dd4b3ea6dc6aaf7d1b49f67438",
+    "80c567d2ed4efb2cfa6b077f22c7a710d9c78ba4e185a75e8694001114af0733",
+]
+hardening = ["!int"]
+# 0005/0006 use the SerenityOS cursor artwork (converted to Xcursor themes)
+# and the legacy cursor names that resolve even without a system Xcursor theme.
+# 0007 keeps compositor chrome (cursor highlight, HUDs) out of pointer
+# hit-testing so it cannot swallow clicks.
+options = ["!check", "!cross", "!debug", "!lto"]
 
 
 def prepare(self):

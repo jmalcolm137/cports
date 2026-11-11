@@ -2,15 +2,16 @@ pkgname = "bun"
 pkgver = "1.4.4"
 pkgrel = 0
 archs = ["x86_64"]
-
 hostmakedepends = ["patchelf"]
 makedepends = ["libcxxabi-devel"]
 depends = ["ca-certificates", "libcxxabi"]
-
 pkgdesc = "Fast JavaScript runtime, bundler, test runner and package manager"
 license = "MIT AND LGPL-2.0-or-later"
 url = "https://bun.sh"
-
+source = [
+    f"https://github.com/oven-sh/bun/releases/download/bun-v{pkgver}/bun-linux-x64-musl.zip",
+]
+sha256 = ["a5a8ccc5e74dcb883fe974f125a7bdb3b41e5195ed1b870e73f17effd3eb2b2d"]
 # The prebuilt binary is stripped and its ABI shim is intentionally kept
 # outside the scan paths; dependencies are declared explicitly.
 options = [
@@ -22,11 +23,6 @@ options = [
     "!scanshlibs",
     "!strip",
 ]
-
-source = [
-    f"https://github.com/oven-sh/bun/releases/download/bun-v{pkgver}/bun-linux-x64-musl.zip",
-]
-sha256 = ["a5a8ccc5e74dcb883fe974f125a7bdb3b41e5195ed1b870e73f17effd3eb2b2d"]
 
 
 def build(self):

@@ -6,12 +6,9 @@ hostmakedepends = ["zstd-progs"]
 pkgdesc = "Wi-Fi and Bluetooth firmware for Apple T2 and Apple Silicon Macs"
 license = "custom:Apple-Firmware"
 url = "https://github.com/mrheyday/Apple-Firmware"
-
 _commit = "f7ebff75ae7299f7b9068b5d321f66744e6b687c"
-
 source = f"{url}/archive/{_commit}.tar.gz"
 sha256 = "44bafb047086ad11514941fecb25970229a358d7f5be23a2a5932df5de218805"
-
 options = ["!strip"]
 
 
