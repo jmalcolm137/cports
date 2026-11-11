@@ -4,7 +4,8 @@ _clangver = "22"
 pkgver = "16.2.0"
 _bver = pkgver
 _mnver = _bver[0 : _bver.rfind(".")]
-pkgrel = 0
+_trip = self.profile.triplet
+pkgrel = 1
 build_style = "gnu_configure"
 configure_args = [
     "--disable-cet",
@@ -72,18 +73,15 @@ makedepends = [
 depends = [
     f"binutils-{self.profile.arch}",
     f"clang-rt-devel~{_clangver}",
+    "cmd:ld!lld",
     f"libcxx-devel~{_clangver}",
+    "musl-devel",
 ]
 pkgdesc = "GNU Compiler Collection"
 license = "GPL-3.0-or-later"
 url = "https://gcc.gnu.org"
 source = f"$(GNU_SITE)/gcc/gcc-{pkgver}/gcc-{pkgver}.tar.xz"
 sha256 = "e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e"
-hardening = ["!int", "!format", "!var-init"]
-# no tests to run
-options = ["!check", "!lto", "!relr", "!cross", "!scanshlibs"]
-
-_trip = self.profile.triplet
 # we cannot use clang, gcc expects binutils
 tools = {"AS": "as", "LD": "ld.bfd", "OBJDUMP": "gobjdump"}
 # give the build the builtins library in all cases that use LDFLAGS
@@ -98,6 +96,9 @@ nopie_files = [
 broken_symlinks = [
     f"usr/lib/gcc/{_trip}/{_mnver}/libclang_rt.builtins.a",
 ]
+hardening = ["!int", "!format", "!var-init"]
+# no tests to run
+options = ["!check", "!lto", "!relr", "!cross", "!scanshlibs"]
 
 # not all archs have gcc-bootstrap and on some using the regular host
 # clang to bootstrap is fine, but where we can bootstrap with gcc, do

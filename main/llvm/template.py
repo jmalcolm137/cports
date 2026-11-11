@@ -34,6 +34,7 @@ configure_args = [
     "-DLIBUNWIND_USE_COMPILER_RT=ON",
     "-DMLIR_INSTALL_AGGREGATE_OBJECTS=OFF",
 ]
+cmake_dir = "llvm"
 hostmakedepends = [
     "cmake",
     "ninja",
@@ -56,12 +57,11 @@ source = f"https://github.com/llvm/llvm-project/releases/download/llvmorg-{pkgve
 sha256 = "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888"
 # reduce size of debug symbols
 debug_level = 1
-# lto does not kick in until stage 2
-# tests are not enabled
-# runtimes build may invoke built clang during install, which has
-# rpath and fakeroot effectively overrides rpath, so disable that
-options = ["bootstrap", "!ci", "!check", "!installroot"]
-
+tool_flags = {
+    "CFLAGS": ["-fPIC"],
+    "CXXFLAGS": ["-fPIC"],
+    "LDFLAGS": [],
+}
 # disable ubsan integer checks, it breaks aarch64/riscv64/ppc64 targets
 # when lto-linking lld with ubsan'd clang/lld, it causes
 # that to crash in 'AArch64 Instruction Selection'
@@ -69,16 +69,13 @@ options = ["bootstrap", "!ci", "!check", "!installroot"]
 # when building graphviz)
 # while on riscv it prevents rust from building
 hardening = ["!int"]
+# lto does not kick in until stage 2
+# tests are not enabled
+# runtimes build may invoke built clang during install, which has
+# rpath and fakeroot effectively overrides rpath, so disable that
+options = ["bootstrap", "!ci", "!check", "!installroot"]
 
 _llvmgen = pkgver[0 : pkgver.find(".")]
-
-cmake_dir = "llvm"
-
-tool_flags = {
-    "CFLAGS": ["-fPIC"],
-    "CXXFLAGS": ["-fPIC"],
-    "LDFLAGS": [],
-}
 
 _enabled_projects = ["clang", "clang-tools-extra", "lld"]
 _enabled_runtimes = ["compiler-rt", "libcxx", "libcxxabi", "libunwind"]
@@ -132,7 +129,7 @@ else:
     ]
 
 # from stage 2 only, pointless to build before
-_enable_mlir = self.stage >= 2
+_enable_mlir = self.stage >= 2 and not self.profile.cross
 _enable_flang = _enable_mlir and self.profile.wordsize == 64
 
 if _enable_mlir:
@@ -177,14 +174,11 @@ def init_configure(self):
     self.configure_args += [
         "-DLLVM_NATIVE_TOOL_DIR=/usr/bin",
         "-DLLVM_CONFIG_PATH=/usr/bin/llvm-config",
+        "-DLLVM_HEADERS_TABLEGEN=/usr/bin/llvm-tblgen",
         "-DLLVM_TABLEGEN=/usr/bin/llvm-tblgen",
         "-DLLVM_HEADERS_TABLEGEN=/usr/bin/llvm-tblgen",
         "-DCLANG_TABLEGEN=/usr/bin/clang-tblgen",
         "-DCLANG_TIDY_CONFUSABLE_CHARS_GEN=/usr/bin/clang-tidy-confusable-chars-gen",
-        "-DMLIR_TABLEGEN=/usr/bin/mlir-tblgen",
-        "-DMLIR_PDLL_TABLEGEN=/usr/bin/mlir-pdll",
-        "-DMLIR_MLIR_SRC_SHARDER_TABLEGEN=/usr/bin/mlir-src-sharder",
-        "-DMLIR_LINALG_ODS_YAML_GEN=/usr/bin/mlir-linalg-ods-yaml-gen",
     ]
 
 
@@ -258,9 +252,6 @@ def post_install(self):
 
     # extra cross bins, not super useful outside of that but harmless
     self.install_bin("build/bin/clang-tidy-confusable-chars-gen")
-    # FIXME: make it build for cross so we get consistent packages
-    if _enable_mlir and not self.profile.cross:
-        self.install_bin("build/bin/mlir-src-sharder")
 
 
 @subpackage("clang-tools-extra-static")
@@ -350,6 +341,7 @@ def _(self):
     self.depends = [
         self.with_pkgver("libcxx-devel"),
         self.with_pkgver("clang-rt-devel"),
+        self.with_pkgver("lld"),
         self.with_pkgver("llvm-binutils"),
         "fortify-headers",
         "libatomic-chimera-devel",

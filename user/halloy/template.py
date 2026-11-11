@@ -1,5 +1,5 @@
 pkgname = "halloy"
-pkgver = "2026.9"
+pkgver = "2026.10"
 pkgrel = 0
 build_style = "cargo"
 hostmakedepends = [
@@ -18,12 +18,25 @@ pkgdesc = "IRC client"
 license = "GPL-3.0-or-later"
 url = "https://halloy.chat"
 source = f"https://github.com/squidowl/halloy/archive/refs/tags/{pkgver}.tar.gz"
-sha256 = "5d35f1f6cb2902225b5267b62423d3f41d088147a66c0044148c16a6ca7cd4cd"
+sha256 = "19b77a7e09cf66ef518bfa5b1e8b3c07713373d7468d30500b093e327729a00b"
 # no tests in top-level project
 options = ["!check"]
 
 if self.profile.wordsize == 32:
     broken = "needs atomic64"
+
+
+def pre_prepare(self):
+    # ppc64le: https://github.com/bytecodealliance/rustix/issues/1675
+    self.do(
+        "cargo",
+        "update",
+        "--package",
+        "rustix@1.1.4",
+        "--precise",
+        "1.1.6",
+        allow_network=True,
+    )
 
 
 def install(self):

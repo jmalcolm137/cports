@@ -1,6 +1,6 @@
 pkgname = "mpv"
 pkgver = "0.41.0"
-pkgrel = 1
+pkgrel = 2
 build_style = "meson"
 configure_args = [
     "-Dlibmpv=true",
@@ -26,6 +26,7 @@ configure_args = [
     "-Duchardet=enabled",
     "-Dvapoursynth=enabled",
     "-Dvaapi=enabled",
+    "-Dvdpau=enabled",
     "-Dvulkan=enabled",
     "-Dwayland=enabled",
     "-Dx11=enabled",
@@ -57,18 +58,24 @@ makedepends = [
     "libcaca-devel",
     "libcdio-paranoia-devel",
     "libdisplay-info-devel",
+    "libdrm-devel",
     "libdvdnav-devel",
+    "libglvnd-devel",
     "libplacebo-devel",
     "libsixel-devel",
     "libva-devel",
+    "libvdpau-devel",
+    "libx11-devel",
+    "libxfixes-devel",
     "libxinerama-devel",
     "libxkbcommon-devel",
     "libxpresent-devel",
     "libxrandr-devel",
     "libxscrnsaver-devel",
     "libxv-devel",
+    "linux-headers",
     "lua5.1-devel",
-    "mesa-devel",
+    "mesa-gbm-devel",
     "pipewire-devel",
     "pipewire-jack-devel",
     "rubberband-devel",

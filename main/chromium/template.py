@@ -1,6 +1,6 @@
 pkgname = "chromium"
 # https://chromiumdash.appspot.com/releases?platform=Linux
-pkgver = "156.0.8078.73"
+pkgver = "157.0.8103.50"
 # tools/rust/update_rust.py -> CRUBIT_REVISION
 _crubit_ver = "40fbac34597084a0863256d633889eac2c23b91b"
 pkgrel = 0
@@ -19,6 +19,7 @@ configure_args = [
     "enable_vr=false",
     "fatal_linker_warnings=false",
     'ffmpeg_branding="Chrome"',
+    "gtk_version=4",
     'host_pkg_config="/usr/bin/pkg-config"',
     "icu_use_data_file=false",
     "is_clang=true",
@@ -37,7 +38,7 @@ configure_args = [
     "symbol_level=1",
     "treat_warnings_as_errors=false",
     "safe_browsing_use_unrar=false",
-    "v8_use_metagen_instance_types=false",
+    "v8_use_metagen=false",
     "use_clang_modules=false",
     "use_custom_libcxx=false",
     "use_dwarf5=true",
@@ -90,7 +91,7 @@ makedepends = [
     "fontconfig-devel",
     "freetype-devel",
     "glib-devel",
-    "gtk+3-devel",
+    "gtk4-devel",
     "heimdal-devel",
     "highway-devel",
     "lcms2-devel",
@@ -151,7 +152,7 @@ source = [
 ]
 source_paths = [".", "crubit", "typescript"]
 sha256 = [
-    "bb701465f0d3991e7266d24add8b0d39e202a1f209a5b169387785326b0d079a",
+    "a216ef754a1528d6df863a0033379f11d21565c04ab9328d83c4f29c4d16a0c6",
     "07b57fedcffc8c1e8df4875fc314c2290c8cd50ab8d04340b12c945e9c331f5a",
 ]
 debug_level = 1
@@ -276,7 +277,7 @@ def post_patch(self):
         "./tools/rust/build_crubit.py",
         "--skip-checkout",
         allow_network=True,
-        env={"RUSTC_BOOTSTRAP": "1"},
+        env={"RUSTC_BOOTSTRAP": "1", "LD": "clang"},
     )
     self.mkdir("third_party/rust-toolchain/lib/third_party", parents=True)
     self.ln_s(

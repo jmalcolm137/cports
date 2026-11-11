@@ -1,5 +1,5 @@
 pkgname = "openssh"
-pkgver = "10.5_p1"
+pkgver = "10.6_p2"
 pkgrel = 1
 build_style = "gnu_configure"
 configure_args = [
@@ -43,7 +43,7 @@ pkgdesc = "OpenSSH free Secure Shell (SSH) client and server implementation"
 license = "SSH-OpenSSH"
 url = "https://www.openssh.com"
 source = f"https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-{pkgver.replace('_', '')}.tar.gz"
-sha256 = "d44d28a839ea9daf969cc69150fde59910b2b39361dad81a3bd6cbd19218db11"
+sha256 = "9ae44872090cf2f06b3cf9ff147e7f16f309671340763ed2f99248398ae29d5b"
 file_modes = {"usr/lib/ssh-keysign": ("root", "root", 0o4755)}
 # CFI: does not work; maybe make testsuite work first
 hardening = ["vis", "!cfi"]
@@ -64,8 +64,10 @@ def post_install(self):
         self.files_path / "sshd.pam", "usr/lib/pam.d", name="sshd"
     )
 
-    self.install_bin("contrib/ssh-copy-id")
-    self.install_man("contrib/ssh-copy-id.1")
+    # the version from NetBSD; version in contrib/ is not portable
+    # https://gitlab.com/phil_hands/ssh-copy-id/-/work_items/5
+    self.install_bin(self.files_path / "ssh-copy-id")
+    self.install_man(self.files_path / "ssh-copy-id.1")
 
     self.install_tmpfiles(self.files_path / "tmpfiles.conf")
 
