@@ -8,6 +8,8 @@ hostmakedepends = [
     "git",
     "gmake",
     "just",
+    "meson",
+    "ninja",
     "pkgconf",
     "python",
 ]
@@ -240,6 +242,8 @@ def prepare(self):
 
 def build(self):
     self.do("just", "build", env=_cargo_env(self))
+    self.do("meson", "setup", "build-sound", "cosmic-sound-theme")
+    self.do("ninja", "-C", "build-sound")
 
 
 def install(self):
@@ -249,6 +253,14 @@ def install(self):
         "prefix=/usr",
         "install",
         env=_cargo_env(self),
+    )
+    self.do(
+        "meson",
+        "install",
+        "-C",
+        "build-sound",
+        "--destdir",
+        self.chroot_destdir,
     )
 
     # COSMIC installs systemd units and a systemd session target; dinit does
