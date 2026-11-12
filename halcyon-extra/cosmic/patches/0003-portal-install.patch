@@ -1,0 +1,15 @@
+diff --git a/xdg-desktop-portal-cosmic/justfile b/xdg-desktop-portal-cosmic/justfile
+index 223d12f..b1a9925 100644
+--- a/xdg-desktop-portal-cosmic/justfile
++++ b/xdg-desktop-portal-cosmic/justfile
+@@ -47,7 +47,9 @@ distclean: clean
+ install:
+     install -Dm0755 {{ bin-src }} {{ bin-dst }}
+     sed 's|@libexecdir@|{{ libexecdir }}|' data/dbus-1/{{ appid }}.service.in \
+-        | install -Dm0644 /dev/stdin {{ data-dir }}/dbus-1/services/{{ appid }}.service
++        > {{ appid }}.service.tmp
++    install -Dm0644 {{ appid }}.service.tmp {{ data-dir }}/dbus-1/services/{{ appid }}.service
++    rm -f {{ appid }}.service.tmp
+     install -Dm0644 data/cosmic.portal {{ data-dir }}/xdg-desktop-portal/portals/cosmic.portal
+     install -Dm0644 data/cosmic-portals.conf {{ data-dir }}/xdg-desktop-portal/cosmic-portals.conf
+     find 'data'/'icons' -type f -exec echo {} \; \

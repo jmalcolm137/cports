@@ -5,28 +5,40 @@ archs = ["x86_64", "aarch64"]
 prepare_after_patch = True
 hostmakedepends = [
     "cargo-auditable",
+    "clang-devel",
+    "cmake",
+    "findutils",
     "git",
     "gmake",
+    "gsed",
     "just",
     "meson",
+    "nasm",
     "ninja",
     "pkgconf",
     "python",
 ]
 makedepends = [
     "alsa-lib-devel",
+    "dav1d-devel",
     "dbus-devel",
     "elogind-devel",
     "flatpak-devel",
     "glib-devel",
+    "gst-plugins-base-devel",
+    "gstreamer-devel",
     "libdisplay-info-devel",
     "libdrm-devel",
+    "libheif-devel",
     "libinput-devel",
+    "libjpeg-turbo-devel",
     "libseat-devel",
     "libxcb-devel",
     "libxkbcommon-devel",
+    "linux-pam-devel",
     "mesa-devel",
     "mesa-gbm-devel",
+    "openssl3-devel",
     "pipewire-devel",
     "pixman-devel",
     "rust-std",
@@ -38,30 +50,38 @@ makedepends = [
 depends = [
     "accountsservice",
     "bluez",
+    "dav1d",
     "dbus",
+    "dconf",
     "elogind",
     "flatpak",
     "fontconfig",
     "freetype",
     "glib",
+    "gst-libav",
+    "gst-plugins-base",
+    "gst-plugins-good",
+    "gvfs",
     "hicolor-icon-theme",
     "iso-codes",
     "libdisplay-info",
     "libdrm",
+    "libglvnd",
     "libinput",
     "libseat-seatd",
     "libxkbcommon",
-    "mesa-egl-libs",
+    "mesa-dri",
     "mesa-gbm-libs",
-    "mesa-gl-libs",
     "networkmanager",
     "pipewire",
     "pipewire-libs",
     "pixman",
     "polkit",
     "shared-mime-info",
+    "udisks",
     "upower",
     "wayland",
+    "wireplumber",
     "xdg-desktop-portal",
     "xdg-user-dirs",
     "xdg-utils",
@@ -174,7 +194,12 @@ sha256 = [
 tool_flags = {"RUSTFLAGS": ["-Clink-arg=-fuse-ld=lld"]}
 hardening = ["!int"]
 # Checks are disabled because this is a multi-component meta build.
-options = ["!check", "!cross", "!debug", "!lto"]
+options = ["etcfiles", "!check", "!cross", "!debug", "!lto"]
+# component justfiles use GNU xargs/sed extensions
+exec_wrappers = [
+    ("/usr/bin/gsed", "sed"),
+    ("/usr/bin/gxargs", "xargs"),
+]
 
 _rust_components = [
     "cosmic-app-library",
@@ -249,9 +274,9 @@ def build(self):
 def install(self):
     self.do(
         "just",
-        f"rootdir={self.chroot_destdir}",
-        "prefix=/usr",
         "install",
+        self.chroot_destdir,
+        "/usr",
         env=_cargo_env(self),
     )
     self.do(
@@ -269,11 +294,11 @@ def install(self):
     self.uninstall("usr/lib/sysusers.d/cosmic-greeter.conf", missing_ok=True)
     self.uninstall("usr/lib/tmpfiles.d/cosmic-greeter.conf", missing_ok=True)
     self.install_file(
-        self.files_path / "cosmic-dinit-service", "usr/libexec", mode=0o755
+        self.files_path / "cosmic-dinit-service", "usr/lib", mode=0o755
     )
     self.install_file(
         self.files_path / "50-cosmic-dinit.rules",
         "usr/share/polkit-1/rules.d",
         mode=0o644,
     )
-    self.install_license("cosmic-session/LICENSE")
+    self.install_license("cosmic-session/LICENSE.md")

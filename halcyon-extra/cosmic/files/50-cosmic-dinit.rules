@@ -3,7 +3,7 @@
 polkit.addRule(function(action, subject) {
     if (action.id == "org.freedesktop.policykit.exec" &&
         subject.active && subject.local &&
-        action.lookup("program") == "/usr/libexec/cosmic-dinit-service") {
+        action.lookup("program") == "/usr/lib/cosmic-dinit-service") {
         return polkit.Result.YES;
     }
 });

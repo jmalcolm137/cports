@@ -1,0 +1,8 @@
+diff -ruN a/cosmic-viewer/Cargo.toml b/cosmic-viewer/Cargo.toml
+--- a/cosmic-viewer/Cargo.toml
++++ b/cosmic-viewer/Cargo.toml
+@@ -43,4 +43,3 @@
+ libheif-rs = { version = "2.7.0", default-features = false, features = [
+-  "embedded-libheif",
+   "v1_17",
+ ] }

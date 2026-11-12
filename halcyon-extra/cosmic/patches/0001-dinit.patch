@@ -243,7 +243,7 @@ diff -ruN a/cosmic-settings/cosmic-settings/src/service_manager.rs b/cosmic-sett
 +
 +    fn helper(action: &str, service: &str) -> std::process::Command {
 +        let mut command = std::process::Command::new("pkexec");
-+        command.args(["/usr/libexec/cosmic-dinit-service", action, service]);
++        command.args(["/usr/lib/cosmic-dinit-service", action, service]);
 +        command
 +    }
 +}
@@ -271,7 +271,7 @@ diff -ruN a/cosmic-settings/cosmic-settings/src/service_manager.rs b/cosmic-sett
 +        let service = self.dinit_name().to_owned();
 +        Box::pin(async move {
 +            let mut command = tokio::process::Command::new("pkexec");
-+            command.args(["/usr/libexec/cosmic-dinit-service", "start", service.as_str()]);
++            command.args(["/usr/lib/cosmic-dinit-service", "start", service.as_str()]);
 +            let result = command.status().await;
 +            log_command_result(&result, "dinitctl start", &service);
 +        })
@@ -281,7 +281,7 @@ diff -ruN a/cosmic-settings/cosmic-settings/src/service_manager.rs b/cosmic-sett
 +        let service = self.dinit_name().to_owned();
 +        Box::pin(async move {
 +            let mut command = tokio::process::Command::new("pkexec");
-+            command.args(["/usr/libexec/cosmic-dinit-service", "enable", service.as_str()]);
++            command.args(["/usr/lib/cosmic-dinit-service", "enable", service.as_str()]);
 +            let result = command.status().await;
 +            log_command_result(&result, "dinitctl enable", &service);
 +        })

@@ -1,0 +1,10 @@
+diff -ruN a/xdg-desktop-portal-cosmic/justfile b/xdg-desktop-portal-cosmic/justfile
+--- a/xdg-desktop-portal-cosmic/justfile
++++ b/xdg-desktop-portal-cosmic/justfile
+@@ -8,5 +8,5 @@
+ 
+ # Path baked into the installed service files (without rootdir)
+-libexecdir := clean(prefix / 'libexec')
++libexecdir := clean(prefix / 'lib')
+ 
+ # Installation target paths
