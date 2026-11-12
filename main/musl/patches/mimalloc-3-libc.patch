@@ -1,0 +1,116 @@
+--- a/mimalloc/src/prim/unix/prim.c
++++ b/mimalloc/src/prim/unix/prim.c
+@@ -378,7 +378,7 @@
+     // fall back to regular mmap
+   }
+   #endif
+-  #if (MI_SIZE_SIZE >= 8) && !defined(MAP_ALIGNED)
++  #if (MI_SIZE_SIZE >= 8) && !defined(MAP_ALIGNED) && !defined(MI_LIBC_BUILD)
+   // on 64-bit systems, use the virtual address area after 2TiB for 4MiB aligned allocations
+   if (addr == NULL) {
+     void* hint = _mi_os_get_aligned_hint(try_alignment, size);
+@@ -1088,7 +1088,7 @@
+ // Thread init/done
+ //----------------------------------------------------------------
+ 
+-#if defined(MI_USE_PTHREADS)
++#if defined(MI_USE_PTHREADS) && !defined(MI_LIBC_BUILD)
+ 
+ // use pthread local storage keys to detect thread ending
+ // (and used with MI_TLS_PTHREADS for the default theap)
+--- a/mimalloc/src/prim/prim-tls.c
++++ b/mimalloc/src/prim/prim-tls.c
+@@ -215,6 +215,8 @@
+   _mi_tls_slots_init();
+   #if MI_TLS_MODEL_LOCAL
+     __mi_theap_cached = theap;
++  #elif defined(MI_LIBC_BUILD)
++    __pthread_self()->malloc_tls = theap;
+   #elif MI_TLS_MODEL_FIXED
+     mi_prim_tls_slot_set(MI_TLS_MODEL_FIXED_CACHED, theap);
+   #elif MI_TLS_MODEL_WIN32
+@@ -235,6 +237,8 @@
+   _mi_tls_slots_init();
+   #if MI_TLS_MODEL_LOCAL
+     __mi_theap_default = theap;
++  #elif defined(MI_LIBC_BUILD)
++    __pthread_self()->malloc_tls = theap;
+   #elif MI_TLS_MODEL_FIXED
+     mi_prim_tls_slot_set(MI_TLS_MODEL_FIXED_DEFAULT, theap);
+   #elif MI_TLS_MODEL_WIN32
+--- a/mimalloc/include/mimalloc/prim/prim-tls.h
++++ b/mimalloc/include/mimalloc/prim/prim-tls.h
+@@ -51,7 +51,7 @@
+ 
+ 
+ // Default TLS model
+-#if !defined(MI_TLS_MODEL_LOCAL) && !defined(MI_TLS_MODEL_PTHREADS) && !defined(MI_TLS_MODEL_FIXED) && !defined(MI_TLS_MODEL_WIN32)
++#if !defined(MI_TLS_MODEL_LOCAL) && !defined(MI_TLS_MODEL_PTHREADS) && !defined(MI_TLS_MODEL_FIXED) && !defined(MI_TLS_MODEL_WIN32) && !defined(MI_LIBC_BUILD)
+ #if defined(_WIN32)
+ #define MI_TLS_MODEL_WIN32        1
+ #elif defined(__APPLE__) || defined(__OpenBSD__) || defined(__ANDROID__)  // and FreeBSD?
+@@ -277,6 +277,19 @@
+   return __mi_theap_cached;
+ }
+ 
++#elif defined(MI_LIBC_BUILD)
++// Chimera Linux: the libc owns the pthread structure and provides its own
++// allocator TLS slot, which is initialized before the first allocation.
++#define MI_THEAP_INITASNULL  1
++
++static inline mi_theap_t* _mi_theap_default(void) {
++  return (mi_theap_t*)__pthread_self()->malloc_tls;
++}
++
++static inline mi_theap_t* _mi_theap_cached(void) {
++  return (mi_theap_t*)__pthread_self()->malloc_tls;
++}
++
+ #elif MI_TLS_MODEL_PTHREADS
+ // Dynamic pthread slots. This can be fast depending on the platform (default for macOS and OpenBSD)
+ // On some platforms (like macOS), the loader might allocate on thread local declarations which
+--- a/mimalloc/src/util/threadlocal.c
++++ b/mimalloc/src/util/threadlocal.c
+@@ -44,7 +44,30 @@
+   - mi_slot_fast: a single dedicated thread local for slightly faster access. (used for the main heap's theap)
+ ----------------------------------------------------------- */
+ 
+-#if MI_TLS_MODEL_PTHREADS || defined(__APPLE__)   // macOS has fast pthreads
++#if defined(MI_LIBC_BUILD)
++// The libc provides a dedicated allocator TLS slot in its pthread structure.
++// It is available before the dynamic loader has initialized regular TLS, so
++// use it for the fast slot. The regular dynamic slots still use a C thread
++// local, which is only accessed after TLS initialization.
++static inline void* mi_slot_fast_peek(void) { return __pthread_self()->malloc_tls; }
++static inline void* mi_slot_fast_get(void) { return mi_slot_fast_peek(); }
++static inline bool  mi_slot_fast_set(void* val) { __pthread_self()->malloc_tls = val; return true; }
++static inline void  mi_slot_fast_delete(void) { }
++
++static inline mi_thread_locals_t* mi_thread_locals_peek(void) {
++  return __pthread_self()->malloc_tls_aux;
++}
++static inline mi_thread_locals_t* mi_thread_locals_get(void) {
++  mi_thread_locals_t* result = __pthread_self()->malloc_tls_aux;
++  return (result != NULL ? result : &mi_thread_locals_empty);
++}
++static inline bool mi_thread_locals_set(mi_thread_locals_t* val) {
++  __pthread_self()->malloc_tls_aux = val;
++  return true;
++}
++static inline void mi_thread_locals_delete(void) { }
++
++#elif MI_TLS_MODEL_PTHREADS || defined(__APPLE__)   // macOS has fast pthreads
+ // Use pthreads
+ #define mi_define_thread_local(tp,name,initval) \
+   static pthread_key_t __##name##_key = MI_PTHREAD_KEY_INVALID; \
+@@ -63,8 +86,10 @@
+   static inline void name##_delete(void)  {  }
+ #endif
+ 
++#if !defined(MI_LIBC_BUILD)
+ mi_define_thread_local(mi_thread_locals_t*, mi_thread_locals, &mi_thread_locals_empty)
+ mi_define_thread_local(void*, mi_slot_fast, NULL)
++#endif
+ 
+ 
+ /* -----------------------------------------------------------

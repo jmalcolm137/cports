@@ -1,0 +1,30 @@
+--- a/src/internal/pthread_impl.h
++++ b/src/internal/pthread_impl.h
+@@ -64,6 +64,7 @@
+ 	char *dlerror_buf;
+ 	void *stdio_locks;
+ 	void *malloc_tls;
++	void *malloc_tls_aux;
+ 
+ 	/* Part 3 -- the positions of these fields relative to
+ 	 * the end of the structure is external and internal ABI. */
+--- a/src/env/__init_tls.c
++++ b/src/env/__init_tls.c
+@@ -25,6 +25,7 @@
+ 	td->sysinfo = __sysinfo;
+ 	td->next = td->prev = td;
+ 	td->malloc_tls = __malloc_tls_default;
++	td->malloc_tls_aux = NULL;
+ 	return 0;
+ }
+ 
+--- a/src/thread/pthread_create.c
++++ b/src/thread/pthread_create.c
+@@ -321,6 +321,7 @@
+ 	new->tsd = (void *)tsd;
+ 	new->locale = &libc.global_locale;
+ 	new->malloc_tls = __malloc_tls_default;
++	new->malloc_tls_aux = NULL;
+ 	if (attr._a_detach) {
+ 		new->detach_state = DT_DETACHED;
+ 	} else {

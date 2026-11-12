@@ -7,18 +7,19 @@
 /* disable process constructor stuff */
 #define MI_PRIM_HAS_PROCESS_ATTACH 1
 /* reduce virt memory usage */
-#define MI_DEFAULT_ARENA_RESERVE 64L*1024L
+#define MI_DEFAULT_ARENA_RESERVE 64L * 1024L
 /* this is a hardened build */
 #define MI_SECURE 4
+/* we cannot provide the C++ new handler from libc */
+#define MI_NO_CXX_NEW_HANDLER 1
+/* use the portable thread pointer access path on musl */
+#define MI_LIBC_MUSL 1
 /* this would be nice to have, but unfortunately it
  * makes some things a lot slower (e.g. sort(1) becomes
  * roughly 2.5x slower) so disable unless we figure out
  * some way to make it acceptable...
  */
 #define MI_PADDING 0
-
-/* use smaller segments to accommodate smaller arenas */
-#define MI_SEGMENT_SHIFT (7 + MI_SEGMENT_SLICE_SHIFT)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -58,19 +59,19 @@
 extern int __malloc_replaced;
 extern int __aligned_alloc_replaced;
 
-void * const __malloc_tls_default = (void *)&_mi_heap_empty;
+void *const __malloc_tls_default = (void *)&_mi_theap_empty;
 
 void __malloc_init(pthread_t p) {
+    if (p->malloc_tls == NULL)
+        p->malloc_tls = __malloc_tls_default;
     _mi_auto_process_init();
 }
 
 void __malloc_tls_teardown(pthread_t p) {
-    /* if we never allocated on it, don't do anything */
-    if (p->malloc_tls == (void *)&_mi_heap_empty)
+    if (p->malloc_tls == NULL || p->malloc_tls == __malloc_tls_default)
         return;
-    /* otherwise finalize the thread and reset */
-    _mi_thread_done(p->malloc_tls);
-    p->malloc_tls = (void *)&_mi_heap_empty;
+    _mi_thread_done((mi_theap_t *)p->malloc_tls);
+    p->malloc_tls = __malloc_tls_default;
 }
 
 /* we have nothing to do here, mimalloc is lock-free */
