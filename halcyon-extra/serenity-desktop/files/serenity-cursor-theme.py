@@ -20,66 +20,127 @@ from PIL import Image
 # used by wlroots and older toolkits resolve to the SerenityOS artwork.
 ALIASES = {
     "Arrow": [
-        "default", "left_ptr", "arrow", "top_left_arrow", "context-menu",
-        "alias", "left_side", "right_side",
+        "default",
+        "left_ptr",
+        "arrow",
+        "top_left_arrow",
+        "context-menu",
+        "alias",
+        "left_side",
+        "right_side",
     ],
     "Crosshair": [
-        "crosshair", "cross", "cross_reverse", "tcross", "cell",
+        "crosshair",
+        "cross",
+        "cross_reverse",
+        "tcross",
+        "cell",
     ],
     "IBeam": [
-        "text", "xterm", "vertical-text",
+        "text",
+        "xterm",
+        "vertical-text",
     ],
     "ResizeH": [
-        "ew-resize", "e-resize", "w-resize", "sb_h_double_arrow",
-        "size_hor", "h_double_arrow",
+        "ew-resize",
+        "e-resize",
+        "w-resize",
+        "sb_h_double_arrow",
+        "size_hor",
+        "h_double_arrow",
     ],
     "ResizeV": [
-        "ns-resize", "n-resize", "s-resize", "sb_v_double_arrow",
-        "size_ver", "v_double_arrow", "top_side", "bottom_side",
+        "ns-resize",
+        "n-resize",
+        "s-resize",
+        "sb_v_double_arrow",
+        "size_ver",
+        "v_double_arrow",
+        "top_side",
+        "bottom_side",
     ],
     "ResizeDTLBR": [
-        "nwse-resize", "nw-resize", "se-resize", "fd_double_arrow",
-        "size_fdiag", "top_left_corner", "bottom_right_corner",
+        "nwse-resize",
+        "nw-resize",
+        "se-resize",
+        "fd_double_arrow",
+        "size_fdiag",
+        "top_left_corner",
+        "bottom_right_corner",
     ],
     "ResizeDBLTR": [
-        "nesw-resize", "ne-resize", "sw-resize", "bd_double_arrow",
-        "size_bdiag", "top_right_corner", "bottom_left_corner",
+        "nesw-resize",
+        "ne-resize",
+        "sw-resize",
+        "bd_double_arrow",
+        "size_bdiag",
+        "top_right_corner",
+        "bottom_left_corner",
     ],
     "ResizeColumn": [
-        "col-resize", "split_h",
+        "col-resize",
+        "split_h",
     ],
     "ResizeRow": [
-        "row-resize", "split_v",
+        "row-resize",
+        "split_v",
     ],
     "Hand": [
-        "pointer", "hand1", "hand2", "pointing_hand",
+        "pointer",
+        "hand1",
+        "hand2",
+        "pointing_hand",
     ],
     "Help": [
-        "help", "question_arrow", "whats_this", "left_ptr_help",
+        "help",
+        "question_arrow",
+        "whats_this",
+        "left_ptr_help",
     ],
     "Drag": [
-        "dnd-move", "drag", "dnd-none", "grab",
+        "dnd-move",
+        "drag",
+        "dnd-none",
+        "grab",
     ],
     "DragCopy": [
-        "dnd-copy", "copy",
+        "dnd-copy",
+        "copy",
     ],
     "Move": [
-        "move", "fleur", "all-scroll", "size_all",
+        "move",
+        "fleur",
+        "all-scroll",
+        "size_all",
     ],
     "Wait": [
-        "wait", "watch", "progress", "left_ptr_watch", "half-busy",
+        "wait",
+        "watch",
+        "progress",
+        "left_ptr_watch",
+        "half-busy",
     ],
     "Disallowed": [
-        "not-allowed", "no-drop", "forbidden", "crossed_circle", "circle",
+        "not-allowed",
+        "no-drop",
+        "forbidden",
+        "crossed_circle",
+        "circle",
     ],
     "Eyedropper": [
-        "color-picker", "eyedropper", "picker",
+        "color-picker",
+        "eyedropper",
+        "picker",
     ],
     "Zoom": [
-        "zoom-in", "zoom", "magnifier",
+        "zoom-in",
+        "zoom",
+        "magnifier",
     ],
     "Hidden": [
-        "hidden", "none", "transparent",
+        "hidden",
+        "none",
+        "transparent",
     ],
 }
 
@@ -163,9 +224,7 @@ def load_frames(source, filename, scale, nominal):
         # A few Dark cursors only ship a 1x image. Scale it up with
         # nearest-neighbour to keep the pixel art crisp.
         image = Image.open(source / filename).convert("RGBA")
-        image = image.resize(
-            (image.width * 2, image.height * 2), Image.NEAREST
-        )
+        image = image.resize((image.width * 2, image.height * 2), Image.NEAREST)
     else:
         return []
 
@@ -249,9 +308,7 @@ def build_theme(source, dest, name):
             write_xcursor(cursor_dir / alias, images)
 
     (dest / "index.theme").write_text(
-        "[Icon Theme]\n"
-        f"Name={name}\n"
-        "Comment=SerenityOS cursor theme\n"
+        f"[Icon Theme]\nName={name}\nComment=SerenityOS cursor theme\n"
     )
 
 

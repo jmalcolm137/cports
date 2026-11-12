@@ -1,0 +1,66 @@
+diff --git a/Libraries/LibSandbox/Seccomp.cpp b/Libraries/LibSandbox/Seccomp.cpp
+index 968f7eac50d..350f40bccf3 100644
+--- a/Libraries/LibSandbox/Seccomp.cpp
++++ b/Libraries/LibSandbox/Seccomp.cpp
+@@ -158,11 +158,13 @@ static constexpr unsigned read_only_open_flags = [] {
+ #define IF_DEFINED_pipe2(if_defined, if_not_defined) if_defined
+ #define IF_DEFINED_poll(if_defined, if_not_defined) if_defined
+ #define IF_DEFINED_pread64(if_defined, if_not_defined) if_defined
++#define IF_DEFINED_preadv2(if_defined, if_not_defined) if_defined
+ #define IF_DEFINED_ppoll(if_defined, if_not_defined) if_defined
+ #define IF_DEFINED_prctl(if_defined, if_not_defined) if_defined
+ #define IF_DEFINED_prlimit64(if_defined, if_not_defined) if_defined
+ #define IF_DEFINED_pselect6(if_defined, if_not_defined) if_defined
+ #define IF_DEFINED_pwrite64(if_defined, if_not_defined) if_defined
++#define IF_DEFINED_pwritev2(if_defined, if_not_defined) if_defined
+ #define IF_DEFINED_read(if_defined, if_not_defined) if_defined
+ #define IF_DEFINED_readlink(if_defined, if_not_defined) if_defined
+ #define IF_DEFINED_readlinkat(if_defined, if_not_defined) if_defined
+@@ -379,6 +381,10 @@ static constexpr unsigned read_only_open_flags = [] {
+ #    undef IF_DEFINED_pread64
+ #    define IF_DEFINED_pread64(if_defined, if_not_defined) if_not_defined
+ #endif
++#ifndef __NR_preadv2
++#    undef IF_DEFINED_preadv2
++#    define IF_DEFINED_preadv2(if_defined, if_not_defined) if_not_defined
++#endif
+ #ifndef __NR_readlink
+ #    undef IF_DEFINED_readlink
+ #    define IF_DEFINED_readlink(if_defined, if_not_defined) if_not_defined
+@@ -419,6 +425,10 @@ static constexpr unsigned read_only_open_flags = [] {
+ #    undef IF_DEFINED_pwrite64
+ #    define IF_DEFINED_pwrite64(if_defined, if_not_defined) if_not_defined
+ #endif
++#ifndef __NR_pwritev2
++#    undef IF_DEFINED_pwritev2
++#    define IF_DEFINED_pwritev2(if_defined, if_not_defined) if_not_defined
++#endif
+ #ifndef __NR_recvmmsg
+ #    undef IF_DEFINED_recvmmsg
+ #    define IF_DEFINED_recvmmsg(if_defined, if_not_defined) if_not_defined
+@@ -646,9 +656,15 @@ static char const* syscall_name(long syscall_number)
+ #ifdef __NR_openat
+         CASE_SYSCALL_NAME(openat);
+ #endif
++#ifdef __NR_preadv2
++        CASE_SYSCALL_NAME(preadv2);
++#endif
+ #ifdef __NR_prctl
+         CASE_SYSCALL_NAME(prctl);
+ #endif
++#ifdef __NR_pwritev2
++        CASE_SYSCALL_NAME(pwritev2);
++#endif
+ #ifdef __NR_readlink
+         CASE_SYSCALL_NAME(readlink);
+ #endif
+@@ -1282,7 +1298,9 @@ void SeccompPolicy::allow_file_descriptor_operations()
+     SECCOMP_APPEND_ALLOW_SYSCALL_IF_DEFINED(*this, ftruncate);
+     SECCOMP_APPEND_ALLOW_SYSCALL_IF_DEFINED(*this, lseek);
+     SECCOMP_APPEND_ALLOW_SYSCALL_IF_DEFINED(*this, pread64);
++    SECCOMP_APPEND_ALLOW_SYSCALL_IF_DEFINED(*this, preadv2);
+     SECCOMP_APPEND_ALLOW_SYSCALL_IF_DEFINED(*this, pwrite64);
++    SECCOMP_APPEND_ALLOW_SYSCALL_IF_DEFINED(*this, pwritev2);
+     SECCOMP_APPEND_ALLOW_SYSCALL_IF_DEFINED(*this, sendfile);
+     SECCOMP_APPEND_ALLOW_SYSCALL_IF_DEFINED(*this, memfd_create);
+ 
