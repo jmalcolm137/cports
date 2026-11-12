@@ -1,15 +1,10 @@
 pkgname = "halcyon-setup"
 pkgver = "0.1.0"
-pkgrel = 14
-pkgdesc = "Windows 95-style installation wizard for Halcyon Linux"
-license = "BSD-2-Clause"
-url = "https://github.com/jmalcolm137/halcyon-setup"
-
+pkgrel = 15
 # Update this to the release commit when publishing the package. The r11
 # patches were merged into the source tree, so the package now builds directly
 # from the commit below.
-_commit = "c46ccfb5299007ac5b9a136181ea414dc769c942"
-
+_commit = "2308b5569d55c8cc51370df4117e34a70f5009f3"
 hostmakedepends = ["gmake"]
 makedepends = [
     "serenity-lagom-devel",
@@ -33,16 +28,6 @@ depends = [
     "util-linux",
     "xfsprogs",
 ]
-
-# libwindowserver.so is installed as part of the SDE prefix and does not carry
-# a SONAME.
-ignore_shlibs = ["libwindowserver.so"]
-
-# The project needs C++26 and is built without exceptions.
-tool_flags = {
-    "CXXFLAGS": ["-std=c++26", "-fno-exceptions", "-Wno-literal-suffix"],
-}
-
 match self.profile.arch:
     case "x86_64":
         depends += [
@@ -57,11 +42,20 @@ match self.profile.arch:
         depends += ["grub-riscv64-efi", "limine"]
     case "ppc" | "ppc64" | "ppc64le":
         depends += ["grub-powerpc-ieee1275"]
-
-options = ["!check", "!cross", "etcfiles"]
-
+# libwindowserver.so is installed as part of the SDE prefix and does not carry
+# a SONAME.
+ignore_shlibs = ["libwindowserver.so"]
+pkgdesc = "Windows 95-style installation wizard for Halcyon Linux"
+license = "BSD-2-Clause"
+url = "https://github.com/jmalcolm137/halcyon-setup"
 source = f"{url}/archive/{_commit}.tar.gz"
-sha256 = ["4fe45007e08e51d0c076957b16a7de5a61c8628c21dfc371aa1831d8865d158a"]
+sha256 = ["d639c58f279a1e6c36b84f518570af00abb3d0025195de6321b5ced099f65d4e"]
+# The GUI has no automated test suite; cross builds are not supported.
+options = ["!check", "!cross", "etcfiles"]
+# The project needs C++26 and is built without exceptions.
+tool_flags = {
+    "CXXFLAGS": ["-std=c++26", "-fno-exceptions", "-Wno-literal-suffix"],
+}
 
 
 def build(self):
