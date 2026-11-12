@@ -94,11 +94,27 @@ def prepare(self):
         self.cp(self.files_path / "node" / src, dest)
 
     # the Node build's internal binary name is opencode2-node; install as opencode
+    # upstream's Node prelude hardcodes OPENTUI_LIBC="glibc", so OpenTUI looks
+    # for the glibc native asset even though we embed the musl one; select musl
+    # for it and for the watcher/fff fallbacks as well
     cfg = self.cwd / "packages/cli/vite.node.config.ts"
     cfg.write_text(
-        cfg.read_text().replace(
+        cfg.read_text()
+        .replace(
             'OPENCODE_CLI_NAME: JSON.stringify("opencode2-node")',
             'OPENCODE_CLI_NAME: JSON.stringify("opencode")',
+        )
+        .replace(
+            'process.env.OPENTUI_LIBC = "glibc"',
+            'process.env.OPENTUI_LIBC = "musl"',
+        )
+        .replace(
+            'OPENCODE_LIBC: input.target.platform === "linux" ? JSON.stringify("glibc") : "undefined"',
+            'OPENCODE_LIBC: input.target.platform === "linux" ? JSON.stringify("musl") : "undefined"',
+        )
+        .replace(
+            'FFF_LIBC: input.target.platform === "linux" ? JSON.stringify("gnu") : "undefined"',
+            'FFF_LIBC: input.target.platform === "linux" ? JSON.stringify("musl") : "undefined"',
         )
     )
 
