@@ -1,7 +1,7 @@
 pkgname = "libghostty-vt"
 pkgver = "1.0.0"
 pkgrel = 0
-hostmakedepends = ["zig"]
+hostmakedepends = ["pkgconf", "zig"]
 pkgdesc = "Portable C library for terminal emulation"
 license = "MIT AND Apache-2.0 AND Unicode-3.0"
 url = "https://github.com/ghostty-org/ghostty"
@@ -15,7 +15,7 @@ source = [
         f"libghostty-vt-{pkgver}-deps.tar.gz"
     ),
 ]
-source_paths = [".", "deps"]
+source_paths = [".", "deps-cache"]
 sha256 = [
     "4a6ef758be721923e1969e7b81b443dcc92d8dd3fb5a39600c03a8817a753676",
     "4d5ea5e448e4c7ea8fb55ccbaa8668f2a97d44f438cee831e2b7ecd162d85c29",
@@ -47,6 +47,12 @@ _zig_build_args = [
     "-Dcpu=baseline",
     f"-Dtarget={_target}",
 ]
+
+
+def prepare(self):
+    # the release source already has a deps/ directory; merge the prefetched
+    # dependency cache into it
+    self.do("cp", "-R", "deps-cache/.", "deps/")
 
 
 def build(self):

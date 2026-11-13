@@ -82,6 +82,11 @@ def install(self):
 
 def post_install(self):
     self.install_license("LICENSE")
+    # Chimera expects the bash completion to be named after the command
+    self.rename(
+        "usr/share/bash-completion/completions/ghostty.bash",
+        "ghostty",
+    )
     # the app build also stages the embeddable C library; the separate
     # libghostty-vt package owns those files
     self.uninstall("usr/include/ghostty", missing_ok=True)

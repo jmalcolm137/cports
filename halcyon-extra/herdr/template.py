@@ -10,7 +10,7 @@ pkgdesc = "Terminal workspace manager for AI coding agents"
 license = "Apache-2.0"
 url = "https://herdr.dev"
 source = [
-    f"{url}/archive/refs/tags/v{pkgver}.tar.gz",
+    f"https://github.com/herdrdev/herdr/archive/refs/tags/v{pkgver}.tar.gz",
 ]
 source_paths = [".", "zig016"]
 sha256 = [
