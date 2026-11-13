@@ -2,6 +2,7 @@ pkgname = "dotnet10"
 pkgver = "10.0.113"
 pkgrel = 0
 archs = ["x86_64"]
+prepare_after_patch = True
 _bootstrap = "10.0.113-r0"
 _gccver = "15.2.0-r9"
 hostmakedepends = [
@@ -19,6 +20,7 @@ hostmakedepends = [
     "patchelf",
     "pigz",
     "protobuf-protoc",
+    "python",
     "rsync",
     "unzip",
     "xz",
@@ -212,8 +214,7 @@ def post_patch(self):
         f.write(manifest)
 
 
-def build(self):
-    aux = self.statedir / "aux"
+def _build_env(self):
     auxc = self.chroot_statedir / "aux"
 
     cflags = self.get_cflags(hardening=[], shell=True)
@@ -268,6 +269,14 @@ def build(self):
         "/p:UseSystemLibs=+brotli+zlib+rapidjson+libunwind-lttng",
     ]
 
+    return auxc, env, args
+
+
+def prepare(self):
+    auxc, env, args = _build_env(self)
+
+    # The source build restores NuGet packages, so it has to run in a phase
+    # with network access; the build phase itself is offline.
     self.do(
         "./build.sh",
         "--with-sdk",
@@ -282,6 +291,10 @@ def build(self):
         env=env,
         allow_network=True,
     )
+
+
+def build(self):
+    auxc = self.chroot_statedir / "aux"
 
     # Smoke test the produced SDK and verify it does not pull in GCC runtime
     # libraries.
