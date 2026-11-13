@@ -6,10 +6,14 @@ pkgdesc = "Portable C library for terminal emulation"
 license = "MIT AND Apache-2.0 AND Unicode-3.0"
 url = "https://github.com/ghostty-org/ghostty"
 source = [
-    f"https://release.files.ghostty.org/libghostty-vt/{pkgver}/"
-    f"libghostty-vt-{pkgver}.tar.gz",
-    f"https://release.files.ghostty.org/libghostty-vt/{pkgver}/"
-    f"libghostty-vt-{pkgver}-deps.tar.gz",
+    (
+        f"https://release.files.ghostty.org/libghostty-vt/{pkgver}/"
+        f"libghostty-vt-{pkgver}.tar.gz"
+    ),
+    (
+        f"https://release.files.ghostty.org/libghostty-vt/{pkgver}/"
+        f"libghostty-vt-{pkgver}-deps.tar.gz"
+    ),
 ]
 source_paths = [".", "deps"]
 sha256 = [
