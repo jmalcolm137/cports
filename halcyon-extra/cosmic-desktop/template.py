@@ -1,4 +1,4 @@
-pkgname = "cosmic"
+pkgname = "cosmic-desktop"
 pkgver = "1.11.0"
 pkgrel = 0
 archs = ["x86_64", "aarch64"]
@@ -87,6 +87,7 @@ depends = [
     "xdg-utils",
     "xwayland",
 ]
+renames = ["cosmic"]
 pkgdesc = "COSMIC desktop environment"
 license = "GPL-3.0-only AND MPL-2.0 AND CC-BY-SA-4.0"
 url = "https://github.com/pop-os/cosmic-epoch"
@@ -235,6 +236,7 @@ _rust_components = [
 def _cargo_env(self, offline=True):
     return {
         "CARGO_HOME": str(self.chroot_cwd / ".cargo-home"),
+        "CARGO_TARGET_DIR": str(self.chroot_cwd / "target"),
         "CARGO_BUILD_JOBS": str(self.make_jobs),
         "CARGO_NET_OFFLINE": "true" if offline else "false",
         "VERGEN_GIT_COMMIT_DATE": "1970-01-01",

@@ -1,0 +1,19 @@
+diff -ruN a/cosmic-viewer/Cargo.toml b/cosmic-viewer/Cargo.toml
+--- a/cosmic-viewer/Cargo.toml
++++ b/cosmic-viewer/Cargo.toml
+@@ -43,4 +43,3 @@
+ libheif-rs = { version = "2.7.0", default-features = false, features = [
+-  "embedded-libheif",
+   "v1_17",
+ ] }
+diff -ruN a/cosmic-viewer/Cargo.lock b/cosmic-viewer/Cargo.lock
+--- a/cosmic-viewer/Cargo.lock
++++ b/cosmic-viewer/Cargo.lock
+@@ -3425,7 +3425,6 @@
+ checksum = "f554864c5f34c7f285ff6acdcadb64bcc2a3de1609e9135cec702c5edc703864"
+ dependencies = [
+  "cfg-if",
+- "cmake",
+  "libc",
+  "system-deps",
+  "vcpkg",

@@ -1,0 +1,14 @@
+diff --git a/pop-launcher/justfile b/pop-launcher/justfile
+index 06793e9..779e7cb 100644
+--- a/pop-launcher/justfile
++++ b/pop-launcher/justfile
+@@ -4,7 +4,8 @@ plugins := 'calc desktop_entries files find pop_shell pulse recent scripts termi
+ rootdir := ''
+ debug := '0'
+ 
+-target-dir := if debug == '1' { 'target/debug' } else { 'target/release' }
++cargo-target-dir := env('CARGO_TARGET_DIR', 'target')
++target-dir := cargo-target-dir / if debug == '1' { 'debug' } else { 'release' }
+ 
+ base-dir := if rootdir == '' {
+     env_var('HOME') / '.local'
