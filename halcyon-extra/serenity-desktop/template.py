@@ -1,6 +1,6 @@
 pkgname = "serenity-desktop"
 pkgver = "0.1.0"
-pkgrel = 4
+pkgrel = 5
 # Used only as the source of the wlroots protocol XMLs. The library and public
 # headers come from the distribution's wlroots0.20 packages.
 _wlroots_ver = "0.20.2"
@@ -48,6 +48,7 @@ depends = [
     "libdisplay-info",
     "libdrm",
     "libei",
+    "libglvnd",
     "libinput",
     "libliftoff",
     "libpulse",
@@ -56,9 +57,7 @@ depends = [
     "libxcb",
     "libxkbcommon",
     "linux-pam-libs",
-    "mesa-egl-libs",
     "mesa-gbm-libs",
-    "mesa-gl-libs",
     "pipewire",
     "pipewire-libs",
     "pixman",
