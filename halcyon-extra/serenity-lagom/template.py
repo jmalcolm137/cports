@@ -1,11 +1,12 @@
 pkgname = "serenity-lagom"
 pkgver = "0.1.0"
-pkgrel = 3
+pkgrel = 4
 # The SDE release is built from these exact revisions; do not update one
 # without the other (see the upstream PKGBUILDs in Meta/packaging/aur).
 # libgui-wayland is newer than the v0.1.0 release: ladybird-sde needs the
-# multi-format clipboard, text-input-v3 and backing-store scale APIs.
-_libgui_commit = "f96f68b24beaa4c1c6e3176fa432a404e086a8b1"
+# multi-format clipboard, text-input-v3 and backing-store scale APIs, and
+# LibVT needs the combined foreground/background SGR colour fix.
+_libgui_commit = "3bbc714a058919784b9094ca36cb9ce88b0319a8"
 _serenity_commit = "054963e8116a3b13797318c5251313c1b8fa4caf"
 hostmakedepends = [
     "bash",
@@ -83,7 +84,7 @@ source_paths = [
     "serenity-desktop-environment",
 ]
 sha256 = [
-    "76a5a7428ad9855311c7e15ec2622f486bbd1f93aa0ed910cd82363a7c2850e7",
+    "97d8100c67426fcf977086fe9e98e631b1be33090c746876b729cc1df36af2b3",
     "15f3dffe50a537c15c465b5f38773637d0bcea670a7ebd31652380d470e4a5b9",
     "abec19a8c4637218c30cb0667a3e97b29533d5dd4b3ea6dc6aaf7d1b49f67438",
 ]
