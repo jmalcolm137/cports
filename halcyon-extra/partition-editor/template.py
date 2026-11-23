@@ -1,6 +1,6 @@
-pkgname = "sparted"
+pkgname = "partition-editor"
 pkgver = "0.1.0"
-pkgrel = 1
+pkgrel = 0
 _commit = "ddcf069b8aa9bc9aeb59d9fd1306697e1a076410"
 hostmakedepends = ["gmake"]
 makedepends = [
@@ -22,6 +22,7 @@ depends = [
     "util-linux",
     "xfsprogs",
 ]
+replaces = ["sparted", "serenity-lagom<0.1.0-r5"]
 # libwindowserver.so does not carry a SONAME
 ignore_shlibs = ["libwindowserver.so"]
 pkgdesc = "LibGUI/GParted port for the Serenity Desktop Environment"
@@ -31,10 +32,18 @@ source = f"{url}/archive/{_commit}.tar.gz"
 sha256 = "9db2ef074333f8995d9fe10b220bc026c6054fdd838a5a1be0c5d6d0c8c0ffce"
 # the project requires C++26 and is built without exceptions
 tool_flags = {
-    "CXXFLAGS": ["-std=c++26", "-fno-exceptions", "-Wno-literal-suffix"],
+    "CXXFLAGS": [
+        "-std=c++26",
+        "-fno-exceptions",
+        "-Wno-literal-suffix",
+        "-I/usr/lib/sde/framework",
+        "-I/usr/lib/sde/framework/Userland/Libraries",
+        "-I/usr/lib/sde/framework/Userland/Services",
+    ],
 }
-# the UI tests need a compositor and the backend tests expect a full userland
-options = ["!check"]
+# the UI tests need a compositor and the backend tests expect a full userland;
+# cross builds are not supported because the build uses host SDE headers/libs
+options = ["!check", "!cross"]
 
 
 def build(self):
@@ -43,13 +52,6 @@ def build(self):
         f"-j{self.make_jobs}",
         "LAGOM=/usr/lib/sde",
         "SERENITY=/usr/lib/sde/framework/serenity",
-        env={
-            "CPPFLAGS": (
-                "-I/usr/lib/sde/framework "
-                "-I/usr/lib/sde/framework/Userland/Libraries "
-                "-I/usr/lib/sde/framework/Userland/Services"
-            ),
-        },
     )
 
 
@@ -73,6 +75,11 @@ def install(self):
 
     self.install_file(
         "res/PartitionEditor.desktop", "usr/share/applications", mode=0o644
+    )
+    self.install_file(
+        self.files_path / "PartitionEditor.af",
+        "usr/lib/sde/share/res/apps",
+        mode=0o644,
     )
     for size in (16, 32, 64, 128, 256):
         self.install_file(

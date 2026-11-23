@@ -1,0 +1,66 @@
+--- a/src/UI/Auth.cpp	2026-11-04 17:20:15.000000000 -0700
++++ b/src/UI/Auth.cpp	2026-11-22 19:35:59.632623124 -0700
+@@ -80,10 +80,14 @@
+     if (wayland_display.is_empty() || runtime_dir.is_empty())
+         return { false, false, "Authentication needs a Wayland session (WAYLAND_DISPLAY and XDG_RUNTIME_DIR)."sv };
+ 
++    auto is_safe_usr_path = [](ByteString const& path) {
++        return path.starts_with("/usr/"sv) && !path.contains(".."sv);
++    };
++
+     // Do not let the privileged instance load resources from a user-writable
+     // build tree; prefer the system installation.
+     auto resource_root = environment_or("SERENITY_RES_ROOT"sv);
+-    if (resource_root.is_empty() || !resource_root.starts_with("/usr/"sv)) {
++    if (!is_safe_usr_path(resource_root)) {
+         resource_root = {};
+         if (access("/usr/lib/sde/share/res", R_OK) == 0)
+             resource_root = "/usr/lib/sde/share/res"sv;
+@@ -92,7 +96,7 @@
+     }
+ 
+     auto icon = environment_or("SPARTED_ICON"sv);
+-    if (icon.is_empty() || !icon.starts_with("/usr/"sv)) {
++    if (!is_safe_usr_path(icon)) {
+         icon = {};
+         if (access("/usr/share/icons/hicolor/32x32/apps/PartitionEditor.png", R_OK) == 0)
+             icon = "/usr/share/icons/hicolor/32x32/apps/PartitionEditor.png"sv;
+@@ -109,7 +113,7 @@
+     // sh -c 'exec "$0" --fork "$1" ... >log 2>&1' SETSID EXE DEVICE READONLY
+     // The redirection and setsid detach the privileged GUI from pkexec's
+     // stdout/stderr, so pkexec can return immediately after authentication.
+-    ByteString script = "exec \"$0\" --fork \"$1\" --device \"$2\" $3 >/var/log/sparted-root.log 2>&1"sv;
++    ByteString script = "exec \"$0\" --fork \"$1\" --device \"$2\" $3 >/var/log/partition-editor-root.log 2>&1"sv;
+ 
+     Vector<ByteString> arguments;
+     arguments.append(env_command);
+--- a/src/Backend/Command.cpp	2026-11-04 17:20:15.000000000 -0700
++++ b/src/Backend/Command.cpp	2026-11-22 19:36:01.090621327 -0700
+@@ -161,13 +161,8 @@
+             char buffer[4096];
+             auto bytes_read = read(descriptor.fd, buffer, sizeof(buffer));
+             if (bytes_read > 0) {
+-                if (descriptor.fd == stdout_pipe[0]) {
+-                    for (ssize_t i = 0; i < bytes_read; ++i)
+-                        output.append(static_cast<u8>(buffer[i]));
+-                } else {
+-                    for (ssize_t i = 0; i < bytes_read; ++i)
+-                        error.append(static_cast<u8>(buffer[i]));
+-                }
++                auto& target = (descriptor.fd == stdout_pipe[0]) ? output : error;
++                target.append(reinterpret_cast<u8 const*>(buffer), static_cast<size_t>(bytes_read));
+             } else if (bytes_read == 0 || (errno != EINTR && errno != EAGAIN)) {
+                 close(descriptor.fd);
+                 descriptor.fd = -1;
+--- a/src/main.cpp	2026-11-04 17:20:15.000000000 -0700
++++ b/src/main.cpp	2026-11-22 19:36:02.719619320 -0700
+@@ -152,7 +152,8 @@
+             continue;
+         }
+         if (argument.starts_with("--"sv)) {
+-            fprintf(stderr, "sparted: ignoring unknown option %s\n", ByteString { argument }.characters());
++            fprintf(stderr, "PartitionEditor: unknown option %s\n", ByteString { argument }.characters());
++            return 1;
+         }
+     }
+ 

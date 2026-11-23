@@ -1,0 +1,13 @@
+#!/bin/sh
+export SERENITY_RES_ROOT="${SERENITY_RES_ROOT:-/usr/lib/sde/share/res}"
+if [ -d /usr/lib/sde/lib ]; then
+    export LD_LIBRARY_PATH="/usr/lib/sde/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
+RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+if [ -n "${WAYLAND_DISPLAY:-}" ] && [ -S "$RUNTIME_DIR/$WAYLAND_DISPLAY" ]; then
+    :
+elif [ -S "$RUNTIME_DIR/sde" ]; then
+    export XDG_RUNTIME_DIR="$RUNTIME_DIR"
+    export WAYLAND_DISPLAY=sde
+fi
+exec /usr/lib/sde/bin/PartitionEditor.real "$@"

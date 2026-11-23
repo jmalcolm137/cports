@@ -1,0 +1,119 @@
+--- a/src/UI/Dialogs.cpp	2026-11-04 17:20:15.000000000 -0700
++++ b/src/UI/Dialogs.cpp	2026-11-22 19:35:11.274682912 -0700
+@@ -253,7 +253,8 @@
+     auto region_bounds = [&]() -> SectorRange {
+         auto const& region = current_region();
+         auto align = alignment();
+-        auto start = round_up(region.start, align);
++        auto min_sector = max<i64>(align, region.start);
++        auto start = round_up(min_sector, align);
+         auto end = round_down(region.end + 1, align) - 1;
+         if (end < start)
+             end = region.end;
+@@ -285,8 +286,9 @@
+         auto after = max(0, max_mib - max(before, 0) - current_size);
+         after_label.set_text(MUST(String::formatted("{} MiB", after)));
+ 
+-        if (fs_combo && label_box) {
+-            auto selected_fs = createable.is_empty() ? ByteString {} : createable[fs_combo->selected_index()].name;
++        if (fs_combo && label_box && !createable.is_empty()) {
++            auto idx = min(fs_combo->selected_index(), createable.size() - 1);
++            auto selected_fs = createable[idx].name;
+             auto limit = label_limit_for(selected_fs);
+             if (label_box->text().length() > static_cast<size_t>(limit))
+                 label_box->set_text(label_box->text().substring(0, limit));
+@@ -306,7 +308,9 @@
+         fs_combo->on_change = [&](ByteString const&, GUI::ModelIndex const&) { update_fields(); };
+ 
+     region_combo.set_selected_index(selected_region);
+-    auto default_mib = max<int>(1, static_cast<int>(current_region().size_bytes() / (1024 * 1024)));
++    auto [initial_start, initial_end] = region_bounds();
++    auto initial_sectors = max<i64>(0, initial_end - initial_start + 1);
++    auto default_mib = max<int>(1, static_cast<int>((static_cast<u64>(initial_sectors) * snapshot.sector_size) / (1024 * 1024)));
+     size_spin.set_range(1, default_mib);
+     size_spin.set_value(default_mib);
+     update_fields();
+@@ -325,7 +329,9 @@
+             return false;
+         }
+ 
+-        auto fs_type = (is_extended || !fs_combo || createable.is_empty()) ? ByteString {} : createable[fs_combo->selected_index()].name;
++        auto fs_type = (is_extended || !fs_combo || createable.is_empty())
++            ? ByteString {}
++            : createable[min(fs_combo->selected_index(), createable.size() - 1)].name;
+         auto label = label_box ? label_box->text() : ByteString {};
+         if (!is_extended && label_box && label.length() > static_cast<size_t>(label_limit_for(fs_type))) {
+             GUI::MessageBox::show_error(parent, ByteString::formatted("{} labels are limited to {} characters.", filesystem_display_name(fs_type), label_limit_for(fs_type)));
+@@ -385,7 +391,7 @@
+             }
+         }
+     }
+-    min_start = round_up(min_start, alignment);
++    min_start = max<i64>(alignment, round_up(min_start, alignment));
+     max_end = round_down(max_end + 1, alignment) - 1;
+     if (max_end < min_start) {
+         GUI::MessageBox::show_error(parent, "There is no room to resize this partition."sv);
+@@ -436,7 +442,7 @@
+     size_spin.on_change = [&](int) { update_fields(); };
+     before_spin.on_change = [&](int) { update_fields(); };
+ 
+-    auto initial_before = max(0, static_cast<int>((static_cast<u64>(partition.start - min_start) * snapshot.sector_size) / (1024 * 1024)));
++    auto initial_before = static_cast<int>((static_cast<u64>(max<i64>(0, partition.start - min_start)) * snapshot.sector_size) / (1024 * 1024));
+     before_spin.set_range(0, max(0, max_mib - current_mib));
+     before_spin.set_value(min(initial_before, max(0, max_mib - current_mib)));
+     update_fields();
+@@ -477,6 +483,7 @@
+     auto& warning = root->add<GUI::Label>(MUST(String::formatted("Formatting {} will permanently erase all data currently on it.", partition.path)));
+     warning.set_text_alignment(Gfx::TextAlignment::CenterLeft);
+     warning.set_text_wrapping(Gfx::TextWrapping::Wrap);
++    warning.set_fixed_height(48);
+ 
+     auto& fs_row = add_row(*root, "New file system:"_string);
+     auto& fs_combo = fs_row.add<GUI::ComboBox>();
+@@ -504,8 +511,11 @@
+     label_box.set_text(partition.label);
+ 
+     Optional<FormatPartitionRequest> request;
++    root->add_spacer();
+     add_button_row(*root, dialog, [&]() -> bool {
+-        auto& type = createable[fs_combo.selected_index()];
++        if (createable.is_empty())
++            return false;
++        auto& type = createable[min(fs_combo.selected_index(), createable.size() - 1)];
+         if (label_box.text().length() > static_cast<size_t>(label_limit_for(type.name))) {
+             GUI::MessageBox::show_error(parent, ByteString::formatted("{} labels are limited to {} characters.", type.display_name, label_limit_for(type.name)));
+             return false;
+@@ -660,17 +670,21 @@
+     auto& warning = root->add<GUI::Label>(MUST(String::formatted("This will erase the existing partition table on {} and all partitions it describes.\n\nAll data on the disk will become inaccessible.", snapshot.path)));
+     warning.set_text_alignment(Gfx::TextAlignment::CenterLeft);
+     warning.set_text_wrapping(Gfx::TextWrapping::Wrap);
++    warning.set_fixed_height(84);
+ 
+     auto& type_row = add_row(*root, "Partition table type:"_string);
+     auto& combo = type_row.add<GUI::ComboBox>();
+     combo.set_fixed_width(220);
+-    combo.set_model(StringListModel::create(move(ordered)));
++    combo.set_model(StringListModel::create(ordered));
+     combo.set_only_allow_values_from_model(true);
+     combo.set_selected_index(0);
+ 
+     Optional<ByteString> result;
++    root->add_spacer();
+     add_button_row(*root, dialog, [&]() -> bool {
+-        result = ordered[combo.selected_index()];
++        if (ordered.is_empty())
++            return false;
++        result = ordered[min(combo.selected_index(), ordered.size() - 1)];
+         return true;
+     }, "Create"_string);
+ 
+@@ -764,7 +778,8 @@
+     ByteString text = ByteString::formatted("{:<12} {:<8} {:<8} {:<8} {:<8} {:<8}\n", "File system", "Create", "Check", "Grow", "Shrink", "Label");
+     text = ByteString::formatted("{}--------------------------------------------------------------\n", text);
+     for (auto const& type : filesystem_types()) {
+-        text = ByteString::formatted("{:<12} {:<8} {:<8} {:<8} {:<8} {:<8}\n",
++        text = ByteString::formatted("{}{:<12} {:<8} {:<8} {:<8} {:<8} {:<8}\n",
++            text,
+             type.display_name,
+             type.can_create ? "yes" : "-",
+             type.can_check ? "yes" : "-",

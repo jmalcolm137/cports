@@ -1,0 +1,96 @@
+--- a/src/Backend/Operations.cpp	2026-11-04 17:20:15.000000000 -0700
++++ b/src/Backend/Operations.cpp	2026-11-22 19:35:34.941653602 -0700
+@@ -124,7 +124,9 @@
+     if (!snapshot.has_table || snapshot.size_bytes == 0)
+         return;
+ 
+-    auto last_sector = static_cast<i64>((snapshot.size_bytes / snapshot.sector_size) - 1);
++    auto total_sectors = static_cast<i64>(snapshot.size_bytes / max<u64>(1, snapshot.sector_size));
++    auto first_usable = snapshot.table_type == "gpt"sv ? i64 { 34 } : i64 { 1 };
++    auto last_sector = snapshot.table_type == "gpt"sv ? max<i64>(first_usable, total_sectors - 34) : max<i64>(first_usable, total_sectors - 1);
+ 
+     Vector<Partition const*> top_level;
+     for (auto const& partition : snapshot.partitions) {
+@@ -136,7 +138,7 @@
+         return a->start < b->start;
+     });
+ 
+-    i64 cursor = 0;
++    i64 cursor = first_usable;
+     for (auto const* partition : top_level) {
+         if (partition->start > cursor)
+             snapshot.free_regions.append({ cursor, partition->start - 1, snapshot.sector_size, false });
+@@ -487,20 +489,19 @@
+     auto* constraint = ped_constraint_any(device.device);
+     auto added = ped_disk_add_partition(disk.disk, partition, constraint);
+     ped_constraint_destroy(constraint);
+-    if (!added)
++    if (!added) {
++        ped_partition_destroy(partition);
+         return fail(error, "libparted refused to add the new partition (it may overlap another partition)."sv);
++    }
+ 
+     if (!ped_disk_commit(disk.disk))
+         return fail(error, "Failed to write the new partition table."sv);
+ 
+-    auto number = ped_disk_get_last_partition_num(disk.disk);
+-    auto* created = ped_disk_get_partition(disk.disk, number);
++    auto number = partition->num;
+     ByteString path;
+-    if (created) {
+-        if (auto* part_path = ped_partition_get_path(created)) {
+-            path = ByteString { part_path };
+-            free(part_path);
+-        }
++    if (auto* part_path = ped_partition_get_path(partition)) {
++        path = ByteString { part_path };
++        free(part_path);
+     }
+     if (path.is_empty())
+         path = partition_path_for(op.device_path, number);
+@@ -581,6 +582,9 @@
+     if (path.is_empty())
+         path = partition_path_for(op.device_path, op.partition_number);
+ 
++    if (op.start != op.old_start && !fs_type.is_empty() && fs_type != "unformatted"sv)
++        return fail(error, "Moving the start of a formatted partition is not supported because it would corrupt filesystem data."sv);
++
+     if (!fs_type.is_empty() && !same_size) {
+         auto type = filesystem_type_by_name(fs_type);
+         if (!type.has_value() || !type->can_resize)
+--- a/src/Backend/Scanner.cpp	2026-11-04 17:20:15.000000000 -0700
++++ b/src/Backend/Scanner.cpp	2026-11-22 19:44:27.080012752 -0700
+@@ -264,7 +264,7 @@
+         known.append(device.path);
+ 
+     (void)Core::Directory::for_each_entry("/sys/block"sv, Core::DirIterator::Flags::SkipParentAndBaseDir, [&](Core::DirectoryEntry const& entry, Core::Directory const&) -> ErrorOr<IterationDecision> {
+-        if (entry.name.starts_with("loop"sv) || entry.name.starts_with("ram"sv) || entry.name.starts_with("zram"sv))
++        if (entry.name.starts_with("loop"sv) || entry.name.starts_with("ram"sv) || entry.name.starts_with("zram"sv) || entry.name.starts_with("fd"sv) || entry.name.starts_with("sr"sv))
+             return IterationDecision::Continue;
+ 
+         auto path = ByteString::formatted("/dev/{}", entry.name);
+@@ -305,9 +305,9 @@
+ 
+         auto path = ByteString { device->path };
+         auto name = device_name(path);
+-        // Loop devices are usually snap mounts rather than something a person
+-        // wants to repartition. Explicit --device still opens them.
+-        if (name.starts_with("loop"sv))
++        // Loop, zram, floppy, and optical devices are not typical partition
++        // targets. Explicit --device still opens them.
++        if (name.starts_with("loop"sv) || name.starts_with("zram"sv) || name.starts_with("fd"sv) || name.starts_with("sr"sv))
+             continue;
+ 
+         DeviceSummary summary;
+@@ -434,8 +434,10 @@
+     snapshot.max_primary_partitions = ped_disk_get_max_primary_partition_count(disk);
+ 
+     if (snapshot.table_type == "gpt"sv) {
+-        if (auto* uuid = ped_disk_get_uuid(disk))
++        if (auto* uuid = ped_disk_get_uuid(disk)) {
+             snapshot.disk_uuid = format_guid(uuid);
++            free(uuid);
++        }
+     }
+ 
+     PedPartition* part = nullptr;

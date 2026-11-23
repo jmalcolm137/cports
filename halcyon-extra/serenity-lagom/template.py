@@ -1,6 +1,6 @@
 pkgname = "serenity-lagom"
 pkgver = "0.1.0"
-pkgrel = 4
+pkgrel = 5
 # The SDE release is built from these exact revisions; do not update one
 # without the other (see the upstream PKGBUILDs in Meta/packaging/aur).
 # libgui-wayland is newer than the v0.1.0 release: ladybird-sde needs the
@@ -209,7 +209,6 @@ _apps = [
     "ModelGallery",
     "MouseSettings",
     "NetworkSettings",
-    "PartitionEditor",
     "PDFViewer",
     "Piano",
     "PixelPaint",
@@ -353,6 +352,8 @@ def install(self):
             "BUILD": str(lagom),
         },
     )
+    # PartitionEditor is packaged separately as partition-editor.
+    self.uninstall("usr/lib/sde/share/res/apps/PartitionEditor.af")
     self.install_license("serenity-desktop-environment/LICENSE")
     self.install_license(
         "libgui-wayland/LICENSE", name="LICENSE.libgui-wayland"
