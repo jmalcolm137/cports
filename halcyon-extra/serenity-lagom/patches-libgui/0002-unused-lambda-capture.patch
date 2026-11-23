@@ -1,0 +1,19 @@
+--- a/src/WindowServerConnection.h
++++ b/src/WindowServerConnection.h
+@@ -47,7 +47,7 @@
+     template<typename Callback>
+     auto on_server_thread(Callback callback)
+     {
+-        return [this, callback = move(callback)](auto... args) {
++        return [callback = move(callback)](auto... args) {
+             if (MainThreadInvoker::on_server_thread()) {
+                 callback(move(args)...);
+                 return;
+@@ -60,6 +60,6 @@
+             // the process lifetime by LibWM's leaked window_server_slot(), and the
+             // server loop it posts to lives just as long, so the raw pointer is safe.
+-            MainThreadInvoker::post_to_server([this, callback, ... args = move(args)]() mutable {
++            MainThreadInvoker::post_to_server([callback, ... args = move(args)]() mutable {
+                 callback(move(args)...);
+             });
+         };

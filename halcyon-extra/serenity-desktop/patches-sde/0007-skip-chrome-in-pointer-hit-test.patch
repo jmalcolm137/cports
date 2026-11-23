@@ -1,6 +1,6 @@
-diff -ruN a/Services/WindowServer/src/Overlays.cpp b/Services/WindowServer/src/Overlays.cpp
---- a/Services/WindowServer/src/Overlays.cpp	2026-11-06 22:21:17.542993528 -0700
-+++ b/Services/WindowServer/src/Overlays.cpp	2026-11-06 22:23:24.661830302 -0700
+diff --git a/Services/WindowServer/src/chrome/Overlays.cpp b/Services/WindowServer/src/chrome/Overlays.cpp
+--- a/Services/WindowServer/src/chrome/Overlays.cpp
++++ b/Services/WindowServer/src/chrome/Overlays.cpp
 @@ -7,6 +7,7 @@
  #include "Overlays.h"
  
@@ -9,7 +9,8 @@ diff -ruN a/Services/WindowServer/src/Overlays.cpp b/Services/WindowServer/src/O
  #include <LibGfx/Painter.h>
  #include <cmath>
  #include <drm_fourcc.h>
-@@ -156,6 +157,27 @@
+@@ -161,7 +162,28 @@
+     wlr_scene_buffer_set_dest_size(m_buffer, m_rect.width(), m_rect.height());
      wlr_buffer_drop(buffer);
  }
  
@@ -37,9 +38,9 @@ diff -ruN a/Services/WindowServer/src/Overlays.cpp b/Services/WindowServer/src/O
  // --- snapshots --------------------------------------------------------------
  
  RefPtr<Gfx::Bitmap> snapshot_toplevel(wlr_scene_node& toplevel_node)
-diff -ruN a/Services/WindowServer/src/Overlays.h b/Services/WindowServer/src/Overlays.h
---- a/Services/WindowServer/src/Overlays.h	2026-11-06 22:21:17.531092606 -0700
-+++ b/Services/WindowServer/src/Overlays.h	2026-11-06 22:23:27.164843154 -0700
+diff --git a/Services/WindowServer/src/chrome/Overlays.h b/Services/WindowServer/src/chrome/Overlays.h
+--- a/Services/WindowServer/src/chrome/Overlays.h
++++ b/Services/WindowServer/src/chrome/Overlays.h
 @@ -57,6 +57,12 @@
      wlr_scene_buffer* m_buffer { nullptr };
  };
@@ -53,9 +54,9 @@ diff -ruN a/Services/WindowServer/src/Overlays.h b/Services/WindowServer/src/Ove
  // Snapshot a toplevel's rendered content, for the switcher's live thumbnails.
  //
  // The capture mechanism is undecided - composite the toplevel's scene subtree
-diff -ruN a/Services/WindowServer/src/Pointer.cpp b/Services/WindowServer/src/Pointer.cpp
---- a/Services/WindowServer/src/Pointer.cpp	2026-11-06 22:21:17.559679803 -0700
-+++ b/Services/WindowServer/src/Pointer.cpp	2026-11-06 22:21:29.715239980 -0700
+diff --git a/Services/WindowServer/src/input/Pointer.cpp b/Services/WindowServer/src/input/Pointer.cpp
+--- a/Services/WindowServer/src/input/Pointer.cpp
++++ b/Services/WindowServer/src/input/Pointer.cpp
 @@ -11,6 +11,7 @@
  #include "Frame.h"
  #include "Idle.h"
@@ -73,10 +74,10 @@ diff -ruN a/Services/WindowServer/src/Pointer.cpp b/Services/WindowServer/src/Po
      if (!node || node->type != WLR_SCENE_NODE_BUFFER)
          return nullptr;
  
-diff -ruN a/Services/WindowServer/src/SerenityWindow.cpp b/Services/WindowServer/src/SerenityWindow.cpp
---- a/Services/WindowServer/src/SerenityWindow.cpp	2026-11-06 22:21:17.580690665 -0700
-+++ b/Services/WindowServer/src/SerenityWindow.cpp	2026-11-06 22:21:35.153267913 -0700
-@@ -302,7 +302,7 @@
+diff --git a/Services/WindowServer/src/shell/SerenityWindow.cpp b/Services/WindowServer/src/shell/SerenityWindow.cpp
+--- a/Services/WindowServer/src/shell/SerenityWindow.cpp
++++ b/Services/WindowServer/src/shell/SerenityWindow.cpp
+@@ -335,7 +335,7 @@
      if (auto cursor = Core::ConfigFile::open(ByteString::formatted("{}/cursor.ini", Config::state_directory())); !cursor.is_error()) {
          add("cursor.theme"sv, cursor.value()->read_entry("Cursor"sv, "Theme"sv, "Default"sv));
          add("cursor.highlight_radius"sv, ByteString::number(cursor.value()->read_num_entry("Highlight"sv, "Radius"sv, 0)));
@@ -85,9 +86,9 @@ diff -ruN a/Services/WindowServer/src/SerenityWindow.cpp b/Services/WindowServer
      }
      // The output layout (R4.5): "main=<i>;<Mode>,<Device>,<Left>,<Top>,<W>,<H>,<Scale>;...".
      StringBuilder layout;
-diff -ruN a/Services/WindowServer/src/XWayland.cpp b/Services/WindowServer/src/XWayland.cpp
---- a/Services/WindowServer/src/XWayland.cpp	2026-11-06 22:21:17.570127895 -0700
-+++ b/Services/WindowServer/src/XWayland.cpp	2026-11-06 22:21:33.349258647 -0700
+diff --git a/Services/WindowServer/src/shell/XWayland.cpp b/Services/WindowServer/src/shell/XWayland.cpp
+--- a/Services/WindowServer/src/shell/XWayland.cpp
++++ b/Services/WindowServer/src/shell/XWayland.cpp
 @@ -9,6 +9,7 @@
  #include "InputMethod.h"
  #include "Keyboard.h"
@@ -96,7 +97,7 @@ diff -ruN a/Services/WindowServer/src/XWayland.cpp b/Services/WindowServer/src/X
  #include "Pointer.h"
  #include "Resources.h"
  #include "Trace.h"
-@@ -45,7 +46,7 @@
+@@ -61,7 +62,7 @@
  {
      if (!server.xwayland.wlr)
          return false;

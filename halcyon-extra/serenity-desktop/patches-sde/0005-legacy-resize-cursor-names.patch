@@ -1,5 +1,5 @@
---- a/Services/WindowServer/src/Frame.cpp
-+++ b/Services/WindowServer/src/Frame.cpp
+--- a/Services/WindowServer/src/chrome/Frame.cpp
++++ b/Services/WindowServer/src/chrome/Frame.cpp
 @@ -130,19 +130,14 @@
  
  char const* resize_cursor_name(uint32_t edges)

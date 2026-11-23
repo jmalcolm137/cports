@@ -3,15 +3,9 @@ pkgver = "0.1.0"
 pkgrel = 5
 # The SDE release is built from these exact revisions; do not update one
 # without the other (see the upstream PKGBUILDs in Meta/packaging/aur).
-# libgui-wayland is newer than the v0.1.0 release: ladybird-sde needs the
-# multi-format clipboard, text-input-v3 and backing-store scale APIs.
-#
-# Keep libgui-wayland at the revision this Serenity tree was validated with.
-# The LibVT combined foreground/background SGR colour fix is carried in
-# patches/ instead: libgui-wayland main's later patch series (0088 onwards)
-# does not apply on top of this Serenity revision.
-_libgui_commit = "f96f68b24beaa4c1c6e3176fa432a404e086a8b1"
+_libgui_commit = "d2665decdd7da0fd7b41a7652a12ef3c45f47e19"
 _serenity_commit = "054963e8116a3b13797318c5251313c1b8fa4caf"
+_sde_commit = "ad85ee88323bb5aa06cbd9e6e9f6e841468bc093"
 hostmakedepends = [
     "bash",
     "bison",
@@ -79,7 +73,7 @@ url = "https://github.com/jmalcolm137/libgui-wayland"
 source = [
     f"https://github.com/jmalcolm137/libgui-wayland/archive/{_libgui_commit}.tar.gz",
     f"https://github.com/jmalcolm137/serenity/archive/{_serenity_commit}.tar.gz",
-    f"https://github.com/jmalcolm137/serenity-desktop-environment/archive/refs/tags/v{pkgver}.tar.gz",
+    f"https://github.com/jmalcolm137/serenity-desktop-environment/archive/{_sde_commit}.tar.gz",
 ]
 source_paths = [
     "libgui-wayland",
@@ -87,9 +81,9 @@ source_paths = [
     "serenity-desktop-environment",
 ]
 sha256 = [
-    "76a5a7428ad9855311c7e15ec2622f486bbd1f93aa0ed910cd82363a7c2850e7",
+    "31ae6b06d05a2720a90c345a22e480539a9170461814eb2f1fb4ba492bd1c053",
     "15f3dffe50a537c15c465b5f38773637d0bcea670a7ebd31652380d470e4a5b9",
-    "abec19a8c4637218c30cb0667a3e97b29533d5dd4b3ea6dc6aaf7d1b49f67438",
+    "1fd86878b06a0d1e47f5ab7a903d8f6edaae3aeebdd18b715b5b84a502bf421a",
 ]
 hardening = ["!int"]
 # Everything under usr/lib/sde is a self-contained prefix and is not meant to
@@ -279,7 +273,7 @@ def patch(self):
 
     patch.patch(
         self,
-        sorted((lg / "patches").glob("*.patch")),
+        sorted((lg / "patches").rglob("*.patch"), key=lambda p: p.name),
         wrksrc="libgui-wayland/serenity",
         apply_args=["--recount", "-C1"],
     )

@@ -1,0 +1,32 @@
+--- a/src/LibWM.cpp
++++ b/src/LibWM.cpp
+@@ -73,7 +73,19 @@
+ // requested from any thread (the main thread, the LibWM server thread, or an
+ // application's own worker), so both are guarded by s_portal_mutex. It is
+ // recursive because starting the server thread may itself resolve a portal.
+-static pthread_mutex_t s_portal_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
++static pthread_mutex_t& portal_mutex()
++{
++    static pthread_mutex_t mutex;
++    static pthread_once_t once = PTHREAD_ONCE_INIT;
++    pthread_once(&once, [] {
++        pthread_mutexattr_t attr;
++        pthread_mutexattr_init(&attr);
++        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
++        pthread_mutex_init(&mutex, &attr);
++        pthread_mutexattr_destroy(&attr);
++    });
++    return mutex;
++}
+ static HashMap<ByteString, int> s_client_fds;
+ static bool s_server_started { false };
+ 
+@@ -428,7 +440,7 @@
+         return {};
+     }
+ 
+-    WaylandClient::MutexLocker locker(s_portal_mutex);
++    WaylandClient::MutexLocker locker(portal_mutex());
+     if (!s_server_started) {
+         s_server_started = true;
+         start_server_thread();

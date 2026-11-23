@@ -1,6 +1,6 @@
---- a/Services/WindowServer/src/Appearance.cpp
-+++ b/Services/WindowServer/src/Appearance.cpp
-@@ -209,13 +209,22 @@
+--- a/Services/WindowServer/src/chrome/Appearance.cpp
++++ b/Services/WindowServer/src/chrome/Appearance.cpp
+@@ -237,13 +237,22 @@
          return;
      auto theme = config.value()->read_entry("Cursor"sv, "Theme"sv, "Default"sv);
      auto size = config.value()->read_num_entry<int>("Cursor"sv, "Size"sv, 24);
@@ -26,7 +26,7 @@
              for (auto& output : server.outputs)
                  wlr_xcursor_manager_load(manager, output->output->scale);
              auto* old_manager = server.cursor_manager;
-@@ -224,7 +233,7 @@
+@@ -252,7 +261,7 @@
                  wlr_cursor_set_xcursor(server.cursor, manager, "default");
              if (old_manager)
                  wlr_xcursor_manager_destroy(old_manager);

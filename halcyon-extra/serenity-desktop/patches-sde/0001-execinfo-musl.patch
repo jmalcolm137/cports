@@ -1,17 +1,17 @@
 --- a/Services/WindowServer/src/main.cpp
 +++ b/Services/WindowServer/src/main.cpp
-@@ -58,7 +58,9 @@
- #include <LibMain/Main.h>
+@@ -59,7 +59,9 @@
  
  #include <ctime>
--#include <execinfo.h>
+ #include <errno.h>
 +#if defined(__GLIBC__)
-+#    include <execinfo.h>
+ #include <execinfo.h>
 +#endif
  #include <fcntl.h>
  #include <signal.h>
- #include <stdlib.h>
-@@ -528,10 +530,17 @@
+ #include <stdio.h>
+@@ -530,11 +532,16 @@
+         char const* header = "\nWindowServer: crashed with ";
          crash_write(header, strlen(header));
          crash_write(name, strlen(name));
 +#if defined(__GLIBC__)

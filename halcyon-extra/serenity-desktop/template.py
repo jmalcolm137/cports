@@ -1,6 +1,7 @@
 pkgname = "serenity-desktop"
 pkgver = "0.1.0"
-pkgrel = 5
+pkgrel = 6
+_sde_commit = "ad85ee88323bb5aa06cbd9e6e9f6e841468bc093"
 # Used only as the source of the wlroots protocol XMLs. The library and public
 # headers come from the distribution's wlroots0.20 packages.
 _wlroots_ver = "0.20.2"
@@ -63,7 +64,7 @@ depends = [
     "pixman",
     "polkit",
     "python-gobject",
-    "serenity-lagom>=0.1.0-r1",
+    "serenity-lagom>=0.1.0-r5",
     "wayland",
     "wlroots0.20",
     "xcb-util-wm",
@@ -72,12 +73,12 @@ depends = [
 ]
 # Provided by serenity-lagom; the shlib name is unversioned and not in a
 # standard libdir, so the scanner cannot infer the provider.
-ignore_shlibs = ["libwindowserver.so"]
+ignore_shlibs = ["libwm.so"]
 pkgdesc = "SerenityOS desktop environment on Wayland"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/serenity-desktop-environment"
 source = [
-    f"https://github.com/jmalcolm137/serenity-desktop-environment/archive/refs/tags/v{pkgver}.tar.gz",
+    f"https://github.com/jmalcolm137/serenity-desktop-environment/archive/{_sde_commit}.tar.gz",
     f"https://gitlab.freedesktop.org/wlroots/wlroots/-/releases/{_wlroots_ver}/downloads/wlroots-{_wlroots_ver}.tar.gz",
 ]
 source_paths = [
@@ -85,7 +86,7 @@ source_paths = [
     "serenity-desktop-environment/third_party/wlroots",
 ]
 sha256 = [
-    "abec19a8c4637218c30cb0667a3e97b29533d5dd4b3ea6dc6aaf7d1b49f67438",
+    "1fd86878b06a0d1e47f5ab7a903d8f6edaae3aeebdd18b715b5b84a502bf421a",
     "80c567d2ed4efb2cfa6b077f22c7a710d9c78ba4e185a75e8694001114af0733",
 ]
 hardening = ["!int"]
@@ -93,7 +94,7 @@ hardening = ["!int"]
 # and the legacy cursor names that resolve even without a system Xcursor theme.
 # 0007 keeps compositor chrome (cursor highlight, HUDs) out of pointer
 # hit-testing so it cannot swallow clicks.
-options = ["!check", "!cross", "!debug", "!lto"]
+options = ["etcfiles", "!check", "!cross", "!debug", "!lto"]
 
 
 def prepare(self):
@@ -232,18 +233,6 @@ def install(self):
         self.chroot_destdir,
     )
 
-    # Help hardcodes /usr/share/man. The framework source tree carries the
-    # Serenity manuals, but the v0.1.0 split install skips them. Install the
-    # tree here because the ISO rebuilds this package but not serenity-lagom.
-    # Move this back to the framework package once it owns the manuals.
-    self.do("mkdir", "-p", self.chroot_destdir / "usr/share/man")
-    self.do(
-        "cp",
-        "-a",
-        "/usr/lib/sde/framework/serenity/Base/usr/share/man/.",
-        self.chroot_destdir / "usr/share/man/",
-    )
-
     # WindowServer links the private lagom libraries from /usr/lib/sde/lib;
     # libwlroots itself comes from the system wlroots0.20 package.
     self.do(
@@ -262,4 +251,6 @@ def install(self):
         "usr/share/polkit-1/rules.d",
         mode=0o644,
     )
+    # Chimera uses dinit rather than systemd.
+    self.uninstall("usr/lib/systemd")
     self.install_license("serenity-desktop-environment/LICENSE")
