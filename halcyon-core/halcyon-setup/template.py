@@ -1,6 +1,6 @@
 pkgname = "halcyon-setup"
 pkgver = "0.1.0"
-pkgrel = 17
+pkgrel = 18
 # Update this to the release commit when publishing the package. The r11
 # patches were merged into the source tree, so the package now builds directly
 # from the commit below.
