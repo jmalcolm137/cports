@@ -12,3 +12,22 @@ for module in wl brcmfmac brcmutil brcmfmac_wcc; do
         manual_add_modules "$module"
     fi
 done
+
+# initramfs-tools runs init-top/udev before init-top/000-halcyon-wifi, so the
+# runtime selection is not in place when udev first loads drivers. Without a
+# static blacklist, ssb/b43 or bcma claim pre-T2 Broadcom cards (for example
+# the BCM4322 in 2009 MacBook Pros) and wl can no longer bind. These drivers
+# are wrong in the initramfs on every machine: non-T2 hardware uses wl, and T2
+# defers brcmfmac until the real root (and its firmware) is mounted. The
+# halcyon-wifi service makes the final selection after switch_root.
+mkdir -p "${DESTDIR}/etc/modprobe.d"
+cat > "${DESTDIR}/etc/modprobe.d/halcyon-wifi-initramfs.conf" << EOF
+blacklist b43
+blacklist b43legacy
+blacklist bcm43xx
+blacklist bcma
+blacklist brcm80211
+blacklist brcmfmac
+blacklist brcmsmac
+blacklist ssb
+EOF

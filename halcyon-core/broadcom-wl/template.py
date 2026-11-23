@@ -1,6 +1,6 @@
 pkgname = "broadcom-wl"
 pkgver = "6.30.223.271"
-pkgrel = 2
+pkgrel = 3
 # the shipped binary blob and the driver only support x86
 archs = ["x86_64"]
 makedepends = ["dinit-chimera"]

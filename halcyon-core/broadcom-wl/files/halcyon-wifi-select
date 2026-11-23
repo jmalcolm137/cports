@@ -104,6 +104,20 @@ case "$MODE" in
             "$MODPROBE" -r brcmfmac_wcc 2>/dev/null || true
             "$MODPROBE" -r brcmfmac 2>/dev/null || true
             "$MODPROBE" -r brcmutil 2>/dev/null || true
+            # If an in-kernel driver claimed the card before the blacklist
+            # applied, release it and re-register wl so it probes the card.
+            conflict=
+            for module in b43 b43legacy brcmsmac bcma ssb; do
+                if [ -d "$SYSFS/module/$module" ]; then
+                    conflict=1
+                fi
+            done
+            if [ -n "$conflict" ]; then
+                for module in b43 b43legacy brcmsmac bcma ssb; do
+                    "$MODPROBE" -r "$module" 2>/dev/null || true
+                done
+                "$MODPROBE" -r wl 2>/dev/null || true
+            fi
             "$MODPROBE" wl 2>/dev/null || true
         fi
         exit 0
