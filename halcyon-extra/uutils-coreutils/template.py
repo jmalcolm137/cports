@@ -40,8 +40,8 @@ def install(self):
     self.install_license("LICENSE")
 
     # Only the Rust utilities are installed, into the uutils overlay that
-    # base-files puts on PATH. The GNU counterparts and the links for the
-    # utilities uutils does not implement are provided by gnu-compat.
+    # base-files puts on PATH. gnu-compat provides the GNU tools uutils does
+    # not implement.
     self.do(
         "make",
         "install",

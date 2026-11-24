@@ -1,10 +1,10 @@
 pkgname = "gnu-compat"
 pkgver = "0.1.0"
-pkgrel = 0
+pkgrel = 1
 build_style = "meta"
-# The GNU tools that uutils does not implement are linked into /usr/gnulib
+# The GNU tools that uutils does not implement are linked into /usr/gnubin
 # below. GNU findutils is deliberately absent: uutils-findutils provides find,
-# locate, updatedb and xargs in the overlay.
+# locate, updatedb and xargs in the /usr/gnulib overlay.
 depends = [
     "bash",
     "diffutils",
@@ -20,23 +20,23 @@ pkgdesc = "GNU userland for the uutils /usr/gnulib overlay"
 license = "custom:meta"
 url = "https://halcyon-linux.org"
 broken_symlinks = [
-    "usr/gnulib/awk",
-    "usr/gnulib/cmp",
-    "usr/gnulib/diff",
-    "usr/gnulib/grep",
-    "usr/gnulib/m4",
-    "usr/gnulib/sed",
-    "usr/gnulib/tar",
+    "usr/gnubin/awk",
+    "usr/gnubin/cmp",
+    "usr/gnubin/diff",
+    "usr/gnubin/grep",
+    "usr/gnubin/m4",
+    "usr/gnubin/sed",
+    "usr/gnubin/tar",
 ]
 # no tests; the linked utilities come from the dependencies
 options = ["!check"]
 
 
 def install(self):
-    self.install_dir("usr/gnulib")
+    self.install_dir("usr/gnubin")
 
     # uutils implements most of coreutils, but not these; link the GNU
-    # implementations into the overlay so they are found before /usr/bin
+    # implementations into the compatibility directory
     for name, target in {
         "awk": "gawk",
         "cmp": "gcmp",
@@ -46,4 +46,4 @@ def install(self):
         "sed": "gsed",
         "tar": "gtar",
     }.items():
-        self.install_link(f"usr/gnulib/{name}", f"../bin/{target}")
+        self.install_link(f"usr/gnubin/{name}", f"../bin/{target}")
