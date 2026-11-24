@@ -1,6 +1,6 @@
 pkgname = "base-files"
 pkgver = "0.2"
-pkgrel = 1
+pkgrel = 2
 _netbase_ver = "6.5"
 replaces = ["dinit-chimera<0.99.11-r2", "gcompat<1.1.0-r2"]
 # highest priority dir owner
@@ -109,6 +109,10 @@ def install(self):
     # Systemwide profile snippets
     for f in (self.files_path / "profile.d").glob("*.sh"):
         self.install_file(f, "usr/lib/profile.d")
+
+    # Interactive bash does not read /etc/profile; give it the PATH fixup too
+    for f in (self.files_path / "bashrc.d").glob("*.sh"):
+        self.install_file(f, "usr/share/bash/bashrc.d")
 
     # Install common licenses
     self.install_dir("usr/share/licenses")

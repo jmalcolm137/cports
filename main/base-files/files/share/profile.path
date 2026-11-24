@@ -6,7 +6,8 @@
 # filter out everything that is symlinks in Chimera (in order to ensure that
 # all binaries resolve to their canonical path without any symlinks in the
 # way). And if some necessary components are missing, ensure they get added.
-# And while at it, ensure /usr/local always beats /usr.
+# And while at it, ensure /usr/local always beats /usr, and that the uutils
+# overlay (/usr/gnulib) beats the stock /usr/bin userland.
 #
 # We do not want to replace the PATH; in environments like WSL it needs to be
 # preserved for most part, and elsewhere we rely on the defaults given to us
@@ -27,14 +28,16 @@ for p in $PATH; do
                 _HAVE_LBIN=1
             fi
             ;;
+        /usr/gnulib)
+            # re-inserted in front of /usr/bin below
+            ;;
         /usr/bin|/usr/sbin|/bin|/sbin)
             if [ -z "$_HAVE_BIN" ]; then
                 if [ -z "$_HAVE_LBIN" ]; then
-                    _NEW_PATH="$_NEW_PATH:/usr/local/bin:/usr/bin"
+                    _NEW_PATH="$_NEW_PATH:/usr/local/bin"
                     _HAVE_LBIN=1
-                else
-                    _NEW_PATH="$_NEW_PATH:/usr/bin"
                 fi
+                _NEW_PATH="$_NEW_PATH:/usr/gnulib:/usr/bin"
                 _HAVE_BIN=1
             fi
             ;;
@@ -49,10 +52,9 @@ IFS="$_OLD_IFS"
 
 if [ -z "$_HAVE_BIN" ]; then
     if [ -z "$_HAVE_LBIN" ]; then
-        _NEW_PATH="$_NEW_PATH:/usr/local/bin:/usr/bin"
-    else
-        _NEW_PATH="$_NEW_PATH:/usr/bin"
+        _NEW_PATH="$_NEW_PATH:/usr/local/bin"
     fi
+    _NEW_PATH="$_NEW_PATH:/usr/gnulib:/usr/bin"
 fi
 
 export PATH="${_NEW_PATH#:}"
