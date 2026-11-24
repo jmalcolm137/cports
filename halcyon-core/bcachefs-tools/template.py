@@ -75,8 +75,7 @@ def init_build(self):
     # libc cannot detect Chimera's musl version through the Rust target spec,
     # so it hides statx even though musl is new enough; tell it otherwise
     self.make_env["RUSTFLAGS"] = (
-        self.make_env.get("RUSTFLAGS", "")
-        + " --cfg libc_unstable_musl_v1_2_3"
+        self.make_env.get("RUSTFLAGS", "") + " --cfg libc_unstable_musl_v1_2_3"
     ).strip()
 
     # make_use_env means the makefile build style no longer passes these on
