@@ -65,7 +65,9 @@ def install(self):
         name="wifi-select",
         mode=0o755,
     )
-    self.install_initramfs(self.files_path / "halcyon-wifi-hook", name="broadcom-wl")
+    self.install_initramfs(
+        self.files_path / "halcyon-wifi-hook", name="broadcom-wl"
+    )
     self.install_initramfs(
         self.files_path / "halcyon-wifi-init",
         "init-top",
