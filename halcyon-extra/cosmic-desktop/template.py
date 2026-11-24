@@ -1,6 +1,6 @@
 pkgname = "cosmic-desktop"
 pkgver = "1.11.0"
-pkgrel = 0
+pkgrel = 1
 archs = ["x86_64", "aarch64"]
 prepare_after_patch = True
 hostmakedepends = [
@@ -49,6 +49,7 @@ makedepends = [
 ]
 depends = [
     "accountsservice",
+    "adwaita-icon-theme",
     "bluez",
     "dav1d",
     "dbus",
@@ -58,6 +59,7 @@ depends = [
     "fontconfig",
     "freetype",
     "glib",
+    "gsettings-desktop-schemas",
     "gst-libav",
     "gst-plugins-base",
     "gst-plugins-good",
@@ -72,7 +74,9 @@ depends = [
     "libxkbcommon",
     "mesa-dri",
     "mesa-gbm-libs",
+    "mesa-vulkan",
     "networkmanager",
+    "pciutils",
     "pipewire",
     "pipewire-libs",
     "pixman",
@@ -80,9 +84,11 @@ depends = [
     "shared-mime-info",
     "udisks",
     "upower",
+    "vulkan-loader",
     "wayland",
     "wireplumber",
     "xdg-desktop-portal",
+    "xdg-desktop-portal-gtk",
     "xdg-user-dirs",
     "xdg-utils",
     "xwayland",

@@ -1,0 +1,69 @@
+diff --git a/cosmic-applets/Cargo.toml b/cosmic-applets/Cargo.toml
+--- a/cosmic-applets/Cargo.toml
++++ b/cosmic-applets/Cargo.toml
+@@ -47,7 +47,7 @@
+     "multi-window",
+     "tokio",
+     "wayland",
+-    "desktop-systemd-scope",
++    "desktop",
+     "winit",
+ ] }
+ rust-embed = "8.11.0"
+diff --git a/cosmic-app-library/Cargo.toml b/cosmic-app-library/Cargo.toml
+--- a/cosmic-app-library/Cargo.toml
++++ b/cosmic-app-library/Cargo.toml
+@@ -21,7 +21,6 @@
+     "wayland",
+     "tokio",
+     "single-instance",
+-    "desktop-systemd-scope",
+     "xdg-portal",
+ ] }
+ tokio = { version = "1.48", features = ["sync", "rt", "process"] }
+diff --git a/cosmic-launcher/Cargo.toml b/cosmic-launcher/Cargo.toml
+--- a/cosmic-launcher/Cargo.toml
++++ b/cosmic-launcher/Cargo.toml
+@@ -29,7 +29,7 @@
+     "wayland",
+     "tokio",
+     "single-instance",
+-    "desktop-systemd-scope",
++    "desktop",
+     "xdg-portal",
+ ] }
+ tracing = "0.1"
+diff --git a/cosmic-osd/Cargo.toml b/cosmic-osd/Cargo.toml
+--- a/cosmic-osd/Cargo.toml
++++ b/cosmic-osd/Cargo.toml
+@@ -19,7 +19,7 @@
+ libcosmic = { git = "https://github.com/pop-os/libcosmic", default-features = false, features = [
+     "autosize",
+     "dbus-config",
+-    "desktop-systemd-scope",
++    "desktop",
+     "tokio",
+     "wayland",
+     "multi-window",
+diff --git a/cosmic-session/src/main.rs b/cosmic-session/src/main.rs
+--- a/cosmic-session/src/main.rs
++++ b/cosmic-session/src/main.rs
+@@ -191,6 +191,17 @@
+ 	#[cfg(feature = "systemd")]
+ 	systemd::set_systemd_environment("COSMIC_VERSION", env!("CARGO_PKG_VERSION")).await;
+ 
++	#[cfg(not(feature = "systemd"))]
++	{
++		let mut cmd = std::process::Command::new("dbus-update-activation-environment");
++		cmd.arg("--all");
++		for (k, v) in &env_vars {
++			cmd.env(k, v);
++		}
++		if let Err(err) = cmd.status() {
++			warn!("Failed to update D-Bus activation environment: {err:?}");
++		}
++	}
++
+ 	#[cfg(feature = "logind")]
+ 	let _inhibit_fd = match zbus::Connection::system().await {
+ 		Ok(connection) => match logind_zbus::manager::ManagerProxy::new(&connection).await {
