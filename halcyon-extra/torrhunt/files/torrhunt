@@ -1,0 +1,3 @@
+#!/bin/sh
+export LD_PRELOAD="/usr/lib/torrhunt/libtorrhunt-abi.so${LD_PRELOAD:+:$LD_PRELOAD}"
+exec /usr/lib/torrhunt/torrhunt "$@"
