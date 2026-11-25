@@ -1,6 +1,6 @@
 pkgname = "uutils-coreutils"
 pkgver = "0.13.0"
-pkgrel = 0
+pkgrel = 1
 build_style = "cargo"
 hostmakedepends = ["cargo-auditable"]
 makedepends = ["rust-std"]
@@ -10,7 +10,7 @@ url = "https://github.com/uutils/coreutils"
 source = f"{url}/archive/refs/tags/{pkgver}.tar.gz"
 sha256 = "5830c023555ea8e98505e8cfb09524d3097f427c5e58ef197a943e6cb73af9b0"
 # the overlay directory is not a command
-skip_providers = ["usr/gnulib"]
+skip_providers = ["usr/gnubin"]
 # the test suite expects a complete userland and takes a very long time
 options = ["!check"]
 
@@ -49,9 +49,9 @@ def install(self):
         "MULTICALL=y",
         "LN=ln -sf",
         "PREFIX=/usr",
-        "BINDIR=/usr/gnulib",
+        "BINDIR=/usr/gnubin",
         # the binary looks for locales next to itself first
-        "DATAROOTDIR=/usr/gnulib",
+        "DATAROOTDIR=/usr/gnubin",
         "MANPAGES=n",
         "COMPLETIONS=n",
         "CARGOFLAGS=--locked",
