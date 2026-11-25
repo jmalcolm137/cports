@@ -1,10 +1,10 @@
 pkgname = "halcyon-setup"
 pkgver = "0.1.0"
-pkgrel = 18
+pkgrel = 19
 # Update this to the release commit when publishing the package. The r11
 # patches were merged into the source tree, so the package now builds directly
 # from the commit below.
-_commit = "69ab91c6bd709e4ac981995a4770c83573b8704c"
+_commit = "bec2d36a4f2aa31f4e4d4dbccb77d33bafb5120d"
 hostmakedepends = ["gmake"]
 makedepends = [
     "serenity-lagom-devel",
@@ -44,12 +44,12 @@ match self.profile.arch:
         depends += ["grub-powerpc-ieee1275"]
 # libwindowserver.so is installed as part of the SDE prefix and does not carry
 # a SONAME.
-ignore_shlibs = ["libwindowserver.so"]
+ignore_shlibs = ["libwindowserver.so", "libwm.so"]
 pkgdesc = "Windows 95-style installation wizard for Halcyon Linux"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/halcyon-setup"
 source = f"{url}/archive/{_commit}.tar.gz"
-sha256 = ["922a77617858dae3042be9f6b999bd8042096c96d6bbbe27b5b7855fea7db120"]
+sha256 = ["a21b27b7087cf2bf9a78cef065de31454f9545656279e066efc5067812a1b215"]
 # The GUI has no automated test suite; cross builds are not supported.
 options = ["!check", "!cross", "etcfiles"]
 # The project needs C++26 and is built without exceptions.
