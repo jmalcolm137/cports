@@ -1,10 +1,10 @@
 pkgname = "halcyon-setup"
 pkgver = "0.1.0"
-pkgrel = 19
+pkgrel = 20
 # Update this to the release commit when publishing the package. The r11
 # patches were merged into the source tree, so the package now builds directly
 # from the commit below.
-_commit = "bec2d36a4f2aa31f4e4d4dbccb77d33bafb5120d"
+_commit = "88192552a9df58212d72b394ff8d0ddba0708c75"
 hostmakedepends = ["gmake"]
 makedepends = [
     "serenity-lagom-devel",
@@ -49,7 +49,7 @@ pkgdesc = "Windows 95-style installation wizard for Halcyon Linux"
 license = "BSD-2-Clause"
 url = "https://github.com/jmalcolm137/halcyon-setup"
 source = f"{url}/archive/{_commit}.tar.gz"
-sha256 = ["a21b27b7087cf2bf9a78cef065de31454f9545656279e066efc5067812a1b215"]
+sha256 = ["9008199d5115618c0254395d062c3e87d066d4e240d7753a6cc2b314960dad0e"]
 # The GUI has no automated test suite; cross builds are not supported.
 options = ["!check", "!cross", "etcfiles"]
 # The project needs C++26 and is built without exceptions.
