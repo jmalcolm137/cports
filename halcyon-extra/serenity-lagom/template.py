@@ -1,11 +1,11 @@
 pkgname = "serenity-lagom"
 pkgver = "0.1.0"
-pkgrel = 5
+pkgrel = 6
 # The SDE release is built from these exact revisions; do not update one
 # without the other (see the upstream PKGBUILDs in Meta/packaging/aur).
-_libgui_commit = "d2665decdd7da0fd7b41a7652a12ef3c45f47e19"
-_serenity_commit = "054963e8116a3b13797318c5251313c1b8fa4caf"
-_sde_commit = "ad85ee88323bb5aa06cbd9e6e9f6e841468bc093"
+_libgui_commit = "bdcfc26451f95713a5f1f154062c1313f149427f"
+_serenity_commit = "584ceca57dbaca5f3b304915c6b449a69100ba78"
+_sde_commit = "2562d7fe5f647280a29c5e6fedc45fe96ae56dfa"
 hostmakedepends = [
     "bash",
     "bison",
@@ -81,9 +81,9 @@ source_paths = [
     "serenity-desktop-environment",
 ]
 sha256 = [
-    "31ae6b06d05a2720a90c345a22e480539a9170461814eb2f1fb4ba492bd1c053",
-    "15f3dffe50a537c15c465b5f38773637d0bcea670a7ebd31652380d470e4a5b9",
-    "1fd86878b06a0d1e47f5ab7a903d8f6edaae3aeebdd18b715b5b84a502bf421a",
+    "db2c6bcf8bf98c814ebfa8f89d740402f835a7037f7a27956a48da631387a607",
+    "bfd19922cdc4f75e6f42123721496baec551e91078f294adfe52342169fa5d49",
+    "951c4bffd66801f8021e3b8f4377bf9aeb764b6f95d309fede808accf04a7aac",
 ]
 hardening = ["!int"]
 # Everything under usr/lib/sde is a self-contained prefix and is not meant to
@@ -241,6 +241,18 @@ def prepare(self):
     serenity = lg / "serenity"
     lagom = lg / "build/lagom"
     cache = lg / "caches"
+
+    # Clang 23's -Wunused flags the profiler's write-only pid; the SDE builds
+    # with -Werror.
+    prof = self.srcdir / (
+        "serenity-desktop-environment/Libraries/LibSerenitySystem/Profiling.cpp"
+    )
+    prof.write_text(
+        prof.read_text().replace(
+            "static pid_t s_pid { -1 };",
+            "[[maybe_unused]] static pid_t s_pid { -1 };",
+        )
+    )
 
     # SerenityOS downloads Unicode, CLDR, tzdata, CA certificates and other
     # data at configure time. cports only permits network access during the

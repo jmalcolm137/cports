@@ -1,7 +1,7 @@
 pkgname = "serenity-desktop"
 pkgver = "0.1.0"
-pkgrel = 6
-_sde_commit = "ad85ee88323bb5aa06cbd9e6e9f6e841468bc093"
+pkgrel = 7
+_sde_commit = "2562d7fe5f647280a29c5e6fedc45fe96ae56dfa"
 # Used only as the source of the wlroots protocol XMLs. The library and public
 # headers come from the distribution's wlroots0.20 packages.
 _wlroots_ver = "0.20.2"
@@ -64,7 +64,7 @@ depends = [
     "pixman",
     "polkit",
     "python-gobject",
-    "serenity-lagom>=0.1.0-r5",
+    "serenity-lagom>=0.1.0-r6",
     "wayland",
     "wlroots0.20",
     "xcb-util-wm",
@@ -86,7 +86,7 @@ source_paths = [
     "serenity-desktop-environment/third_party/wlroots",
 ]
 sha256 = [
-    "1fd86878b06a0d1e47f5ab7a903d8f6edaae3aeebdd18b715b5b84a502bf421a",
+    "951c4bffd66801f8021e3b8f4377bf9aeb764b6f95d309fede808accf04a7aac",
     "80c567d2ed4efb2cfa6b077f22c7a710d9c78ba4e185a75e8694001114af0733",
 ]
 hardening = ["!int"]
@@ -99,6 +99,17 @@ options = ["etcfiles", "!check", "!cross", "!debug", "!lto"]
 
 def prepare(self):
     sde = self.chroot_cwd / "serenity-desktop-environment"
+    # Clang 23's -Wunused flags the profiler's write-only pid; the SDE builds
+    # with -Werror.
+    prof = self.srcdir / (
+        "serenity-desktop-environment/Libraries/LibSerenitySystem/Profiling.cpp"
+    )
+    prof.write_text(
+        prof.read_text().replace(
+            "static pid_t s_pid { -1 };",
+            "[[maybe_unused]] static pid_t s_pid { -1 };",
+        )
+    )
     wlr = sde / "third_party/wlroots"
     inc = wlr / "patched-include"
     proto = wlr / "build/protocol"
@@ -191,6 +202,9 @@ def build(self):
         sde / "scripts/build-full-sde.sh",
         env={
             "SDE_PREBUILT_FRAMEWORK": "ON",
+            # The framework package builds and installs the application suite;
+            # the desktop package only ships the compositor, services and shell.
+            "SDE_BUILD_APPS": "OFF",
             "LIBGUI_WAYLAND_ROOT": "/usr/lib/sde/framework",
             "SDE_LIBGUI_WAYLAND_ROOT": "/usr/lib/sde/framework",
             "SDE_LAGOM_BUILD_DIR": "/usr/lib/sde",
